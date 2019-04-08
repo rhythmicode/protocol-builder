@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>f284787a-a0cb-42b3-9caf-8e3fc2c45426</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ProtocolBuilderLib</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Builder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ArgumentSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\AttributeSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ClauseSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\CollectionsInitializerParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\CommentParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\DeclarationSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ExpressionSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\LambdaSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ListSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\LogicSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\LoopSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\MemberDeclarationParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\MiscellaneousSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\NameSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ParameterSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\ParsesTypeAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\StatementSyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\SyntaxNodeConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\TypeParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Indenter.cs" />
+  </ItemGroup>
+</Project>
