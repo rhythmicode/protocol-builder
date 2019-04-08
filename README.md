@@ -5,3 +5,6 @@ Protocol builder can be used to define a shared protocol for use on different se
   + TypeScript
   + Kotlin
   + Swift
+
+# Credits
+This project at early stages was a fork from https://github.com/matthewsot/SharpSwift ❤
