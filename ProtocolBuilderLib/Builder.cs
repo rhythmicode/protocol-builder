@@ -74,6 +74,9 @@ namespace ProtocolBuilder
                         case "l":
                             switch (arg)
                             {
+                                case "php":
+                                    Language = Languages.Php;
+                                    break;
                                 case "kotlin":
                                     Language = Languages.Kotlin;
                                     break;
@@ -288,55 +291,12 @@ namespace ProtocolBuilder
                         output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                     break;
                 case Languages.TypeScript:
-                    var rootNamespaceSections = rootNamespace
-                        .Name
-                        .ToString()
-                        .Split('.')
-                        .Where(a1 => !string.IsNullOrWhiteSpace(a1))
-                        .ToList();
-                    foreach (var fe1 in root.Usings.Where(a1 =>
-                        !a1.Name.ToString().ToLower().StartsWith("system") &&
-                        !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
-                    ))
-                    {
-                        if (string.IsNullOrWhiteSpace(fe1.Alias?.ToString()))
-                            continue;
-                        var fe1Sections = fe1
-                            .Name
-                            .ToString()
-                            .Split('.')
-                            .Where(a1 => !string.IsNullOrWhiteSpace(a1))
-                            .ToList();
-                        var iSectionMatched = 0;
-                        while (
-                            iSectionMatched < rootNamespaceSections.Count &&
-                            iSectionMatched < fe1Sections.Count &&
-                            rootNamespaceSections[iSectionMatched] == fe1Sections[iSectionMatched]
-                        )
-                        {
-                            iSectionMatched++;
-                        }
-                        var filePath = "";
-                        if (iSectionMatched < rootNamespaceSections.Count)
-                        {
-                            for (int iSectionReverse = iSectionMatched; iSectionReverse < rootNamespaceSections.Count; iSectionReverse++)
-                            {
-                                filePath += "../";
-                            }
-                        }
-                        if (string.IsNullOrWhiteSpace(filePath))
-                            filePath = "./";
-                        if (iSectionMatched < fe1Sections.Count)
-                        {
-                            for (int iSectionForward = iSectionMatched; iSectionForward < fe1Sections.Count; iSectionForward++)
-                            {
-                                filePath += $"{fe1Sections[iSectionForward]}/";
-                            }
-                        }
-                        filePath = filePath.Trim('/');
-
-                        output += $"import {{ { fe1.Alias.Name.ToString() } }} from '{filePath}';{BuilderStatic.NewLine}";
-                    }
+                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
+                        output += $"import {{ { feUsingParsed.name } }} from '{feUsingParsed.relativePath}';{BuilderStatic.NewLine}";
+                    break;
+                case Languages.Php:
+                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
+                        output += $"require('{ feUsingParsed.relativePath }');{BuilderStatic.NewLine}";
                     break;
             }
 
@@ -389,6 +349,61 @@ namespace ProtocolBuilder
             return (saveRelativeDir, output);
         }
 
+        private static List<(string relativePath, string name)> ParseUsingsWithAlias(CompilationUnitSyntax root, NamespaceDeclarationSyntax rootNamespace)
+        {
+            var result = new List<(string relativePath, string name)>();
+            var rootNamespaceSections = rootNamespace
+                .Name
+                .ToString()
+                .Split('.')
+                .Where(a1 => !string.IsNullOrWhiteSpace(a1))
+                .ToList();
+            foreach (var fe1 in root.Usings.Where(a1 =>
+                !a1.Name.ToString().ToLower().StartsWith("system") &&
+                !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
+            ))
+            {
+                if (string.IsNullOrWhiteSpace(fe1.Alias?.ToString()))
+                    continue;
+                var fe1Sections = fe1
+                    .Name
+                    .ToString()
+                    .Split('.')
+                    .Where(a1 => !string.IsNullOrWhiteSpace(a1))
+                    .ToList();
+                var iSectionMatched = 0;
+                while (
+                    iSectionMatched < rootNamespaceSections.Count &&
+                    iSectionMatched < fe1Sections.Count &&
+                    rootNamespaceSections[iSectionMatched] == fe1Sections[iSectionMatched]
+                )
+                {
+                    iSectionMatched++;
+                }
+                var filePath = "";
+                if (iSectionMatched < rootNamespaceSections.Count)
+                {
+                    for (int iSectionReverse = iSectionMatched; iSectionReverse < rootNamespaceSections.Count; iSectionReverse++)
+                    {
+                        filePath += "../";
+                    }
+                }
+                if (string.IsNullOrWhiteSpace(filePath))
+                    filePath = "./";
+                if (iSectionMatched < fe1Sections.Count)
+                {
+                    for (int iSectionForward = iSectionMatched; iSectionForward < fe1Sections.Count; iSectionForward++)
+                    {
+                        filePath += $"{fe1Sections[iSectionForward]}/";
+                    }
+                }
+                filePath = filePath.Trim('/');
+
+                result.Add((relativePath: filePath, name: fe1.Alias.Name.ToString()));
+            }
+            return result;
+        }
+
         private string FindSolution(string path, int levels)
         {
             if (File.Exists(path))
@@ -437,6 +452,9 @@ namespace ProtocolBuilder
                 case Languages.TypeScript:
                     r = ".ts";
                     break;
+                case Languages.Php:
+                    r = ".php";
+                    break;
             }
             return r;
         }
@@ -451,6 +469,8 @@ namespace ProtocolBuilder
                     return isStatic ? "object " : "open class ";
                 case Languages.TypeScript:
                     return "export class ";
+                case Languages.Php:
+                    return "<?php class ";
                 default:
                     throw new ArgumentException();
             }
@@ -465,6 +485,8 @@ namespace ProtocolBuilder
                 case Languages.Kotlin:
                     return "";
                 case Languages.TypeScript:
+                    return "";
+                case Languages.Php:
                     return "";
                 default:
                     throw new ArgumentException();
