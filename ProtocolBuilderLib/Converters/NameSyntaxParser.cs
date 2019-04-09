@@ -79,6 +79,8 @@ namespace ProtocolBuilder.Converters
                         return "ArrayList<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
                     case Languages.TypeScript:
                         return "Array<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
+                    case Languages.Php:
+                        return "array(" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ")";
                     default:
                         throw new ArgumentException();
                 }
@@ -93,6 +95,8 @@ namespace ProtocolBuilder.Converters
                         return "HashMap<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
                     case Languages.TypeScript:
                         return "Map<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
+                    case Languages.Php:
+                        return "array(" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ")";
                     default:
                         throw new ArgumentException();
                 }

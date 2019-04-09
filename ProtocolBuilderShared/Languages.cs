@@ -6,5 +6,6 @@ namespace ProtocolBuilder
         Swift,
         Kotlin,
         TypeScript,
+        Php,
     }
 }
