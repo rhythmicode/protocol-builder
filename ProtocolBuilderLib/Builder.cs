@@ -74,6 +74,9 @@ namespace ProtocolBuilder
                         case "l":
                             switch (arg)
                             {
+                                case "php":
+                                    Language = Languages.Php;
+                                    break;
                                 case "kotlin":
                                     Language = Languages.Kotlin;
                                     break;
@@ -223,7 +226,17 @@ namespace ProtocolBuilder
             Console.WriteLine("Parsing file " + path);
 
             string output = "";
-
+            switch (Language)
+            {
+                case Languages.Php:
+                    output += "<?php\n";
+                    break;
+                case Languages.Swift:
+                case Languages.Kotlin:
+                case Languages.TypeScript:
+                default:
+                    break;
+            }
             //var doc = GetDocumentFromSolution(solutionPath, path);
             //Console.WriteLine("Step1");
             //if (doc == null)
@@ -288,55 +301,12 @@ namespace ProtocolBuilder
                         output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                     break;
                 case Languages.TypeScript:
-                    var rootNamespaceSections = rootNamespace
-                        .Name
-                        .ToString()
-                        .Split('.')
-                        .Where(a1 => !string.IsNullOrWhiteSpace(a1))
-                        .ToList();
-                    foreach (var fe1 in root.Usings.Where(a1 =>
-                        !a1.Name.ToString().ToLower().StartsWith("system") &&
-                        !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
-                    ))
-                    {
-                        if (string.IsNullOrWhiteSpace(fe1.Alias?.ToString()))
-                            continue;
-                        var fe1Sections = fe1
-                            .Name
-                            .ToString()
-                            .Split('.')
-                            .Where(a1 => !string.IsNullOrWhiteSpace(a1))
-                            .ToList();
-                        var iSectionMatched = 0;
-                        while (
-                            iSectionMatched < rootNamespaceSections.Count &&
-                            iSectionMatched < fe1Sections.Count &&
-                            rootNamespaceSections[iSectionMatched] == fe1Sections[iSectionMatched]
-                        )
-                        {
-                            iSectionMatched++;
-                        }
-                        var filePath = "";
-                        if (iSectionMatched < rootNamespaceSections.Count)
-                        {
-                            for (int iSectionReverse = iSectionMatched; iSectionReverse < rootNamespaceSections.Count; iSectionReverse++)
-                            {
-                                filePath += "../";
-                            }
-                        }
-                        if (string.IsNullOrWhiteSpace(filePath))
-                            filePath = "./";
-                        if (iSectionMatched < fe1Sections.Count)
-                        {
-                            for (int iSectionForward = iSectionMatched; iSectionForward < fe1Sections.Count; iSectionForward++)
-                            {
-                                filePath += $"{fe1Sections[iSectionForward]}/";
-                            }
-                        }
-                        filePath = filePath.Trim('/');
-
-                        output += $"import {{ { fe1.Alias.Name.ToString() } }} from '{filePath}';{BuilderStatic.NewLine}";
-                    }
+                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
+                        output += $"import {{ { feUsingParsed.name } }} from '{feUsingParsed.relativePath}';{BuilderStatic.NewLine}";
+                    break;
+                case Languages.Php:
+                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
+                        output += $"require_once(dirname(__FILE__).'/{ feUsingParsed.relativePath }.php');{BuilderStatic.NewLine}";
                     break;
             }
 
@@ -378,6 +348,7 @@ namespace ProtocolBuilder
             var saveRelativeDir = "";
             switch (Language)
             {
+                case Languages.Php:
                 case Languages.TypeScript:
                 case Languages.Kotlin:
                     saveRelativeDir = $"{string.Join("/", rootNamespace.Name.ToString().Split('.'))}";
@@ -387,6 +358,61 @@ namespace ProtocolBuilder
             }
 
             return (saveRelativeDir, output);
+        }
+
+        private static List<(string relativePath, string name)> ParseUsingsWithAlias(CompilationUnitSyntax root, NamespaceDeclarationSyntax rootNamespace)
+        {
+            var result = new List<(string relativePath, string name)>();
+            var rootNamespaceSections = rootNamespace
+                .Name
+                .ToString()
+                .Split('.')
+                .Where(a1 => !string.IsNullOrWhiteSpace(a1))
+                .ToList();
+            foreach (var fe1 in root.Usings.Where(a1 =>
+                !a1.Name.ToString().ToLower().StartsWith("system") &&
+                !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
+            ))
+            {
+                if (string.IsNullOrWhiteSpace(fe1.Alias?.ToString()))
+                    continue;
+                var fe1Sections = fe1
+                    .Name
+                    .ToString()
+                    .Split('.')
+                    .Where(a1 => !string.IsNullOrWhiteSpace(a1))
+                    .ToList();
+                var iSectionMatched = 0;
+                while (
+                    iSectionMatched < rootNamespaceSections.Count &&
+                    iSectionMatched < fe1Sections.Count &&
+                    rootNamespaceSections[iSectionMatched] == fe1Sections[iSectionMatched]
+                )
+                {
+                    iSectionMatched++;
+                }
+                var filePath = "";
+                if (iSectionMatched < rootNamespaceSections.Count)
+                {
+                    for (int iSectionReverse = iSectionMatched; iSectionReverse < rootNamespaceSections.Count; iSectionReverse++)
+                    {
+                        filePath += "../";
+                    }
+                }
+                if (string.IsNullOrWhiteSpace(filePath))
+                    filePath = "./";
+                if (iSectionMatched < fe1Sections.Count)
+                {
+                    for (int iSectionForward = iSectionMatched; iSectionForward < fe1Sections.Count; iSectionForward++)
+                    {
+                        filePath += $"{fe1Sections[iSectionForward]}/";
+                    }
+                }
+                filePath = filePath.Trim('/');
+
+                result.Add((relativePath: filePath, name: fe1.Alias.Name.ToString()));
+            }
+            return result;
         }
 
         private string FindSolution(string path, int levels)
@@ -437,6 +463,9 @@ namespace ProtocolBuilder
                 case Languages.TypeScript:
                     r = ".ts";
                     break;
+                case Languages.Php:
+                    r = ".php";
+                    break;
             }
             return r;
         }
@@ -451,6 +480,8 @@ namespace ProtocolBuilder
                     return isStatic ? "object " : "open class ";
                 case Languages.TypeScript:
                     return "export class ";
+                case Languages.Php:
+                    return "class ";
                 default:
                     throw new ArgumentException();
             }
@@ -465,6 +496,8 @@ namespace ProtocolBuilder
                 case Languages.Kotlin:
                     return "";
                 case Languages.TypeScript:
+                    return "";
+                case Languages.Php:
                     return "";
                 default:
                     throw new ArgumentException();
@@ -481,6 +514,8 @@ namespace ProtocolBuilder
                     return "enum class";
                 case Languages.TypeScript:
                     return "export enum";
+                case Languages.Php:
+                    return "abstract class";
                 default:
                     throw new ArgumentException();
             }
@@ -494,6 +529,7 @@ namespace ProtocolBuilder
                     return $": {type}, Codable";
                 case Languages.Kotlin:
                     return $"(val rawValue: {type})";
+                case Languages.Php:
                 case Languages.TypeScript:
                     return $"";
                 default:
@@ -501,48 +537,7 @@ namespace ProtocolBuilder
             }
         }
 
-        public string LanguageDeclarationPart1(
-            bool isEnum,
-            bool isStatic,
-            bool isConst,
-            bool isDeclaredAsReadOnly
-        )
-        {
-            var output = "";
-            if (isEnum)
-            {
-                switch (Language)
-                {
-                    case Languages.Swift:
-                        output = $"case ";
-                        break;
-                    case Languages.TypeScript:
-                    case Languages.Kotlin:
-                        output = $"";
-                        break;
-                }
-            }
-            else
-            {
-                switch (Language)
-                {
-                    case Languages.Swift:
-                        output = ((isStatic || isConst) ? "static " : "") + (isDeclaredAsReadOnly ? "let " : "var ");
-                        break;
-                    case Languages.Kotlin:
-                        output = //(isStatic ? "" : "") + (THERE IS NO STATIC KEYWORD IN KOTLIN)
-                            (isDeclaredAsReadOnly ? "val " : "var ");
-                        break;
-                    case Languages.TypeScript:
-                        output =
-                            ((isStatic || isConst) ? "static " : "");
-                        break;
-                }
-            }
-            return output;
-        }
-
-        public string LanguageDeclarationPart2(
+        public string LanguageDeclaration(
             bool isEnum,
             bool isStatic,
             bool isConst,
@@ -554,8 +549,48 @@ namespace ProtocolBuilder
             SyntaxToken? semicolonToken
         )
         {
-            var outputVariable = Converters.BuilderStatic.SyntaxTokenConvert(identifier).TrimEnd();
+            var resultPrefix = "";
+            if (isEnum)
+            {
+                switch (Language)
+                {
+                    case Languages.Swift:
+                        resultPrefix = $"case ";
+                        break;
+                    case Languages.TypeScript:
+                    case Languages.Kotlin:
+                        resultPrefix = $"";
+                        break;
+                    case Languages.Php:
+                        resultPrefix = $"public const ";
+                        break;
+                }
+            }
+            else
+            {
+                switch (Language)
+                {
+                    case Languages.Swift:
+                        resultPrefix = ((isStatic || isConst) ? "static " : "") + (isDeclaredAsReadOnly ? "let " : "var ");
+                        break;
+                    case Languages.Kotlin:
+                        resultPrefix = //(isStatic ? "" : "") + (THERE IS NO STATIC KEYWORD IN KOTLIN)
+                            (isDeclaredAsReadOnly ? "val " : "var ");
+                        break;
+                    case Languages.TypeScript:
+                        resultPrefix =
+                            ((isStatic || isConst) ? "static " : "");
+                        break;
+                    case Languages.Php:
+                        resultPrefix =
+                            $"public {(isConst ? "const " : (isStatic ? "static " : ""))}";
+                        break;
+                }
+            }
 
+            var resultName = Converters.BuilderStatic.SyntaxTokenConvert(identifier).TrimEnd();
+
+            var resultType = "";
             if (!isEnum && !declarationType.IsVar)
             {
                 var isNullable = false;
@@ -568,17 +603,21 @@ namespace ProtocolBuilder
 
                 switch (Language)
                 {
+                    case Languages.Php:
+                        resultType = $"/** @var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")} */ ";
+                        break;
                     case Languages.TypeScript:
-                        outputVariable += $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? " | null" : "")}";
+                        resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? " | null" : "")}";
                         break;
                     case Languages.Swift:
                     case Languages.Kotlin:
                     default:
-                        outputVariable += $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{((isNullable) ? "?" : "")}";
+                        resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{((isNullable) ? "?" : "")}";
                         break;
                 }
             }
 
+            var resultInitializer = "";
             if (initializer != null &&
                 (
                     Language == Languages.Kotlin
@@ -592,45 +631,68 @@ namespace ProtocolBuilder
                     switch (Language)
                     {
                         case Languages.Swift:
-                            outputVariable += " " + Converters.BuilderStatic.SyntaxNode(initializer);
+                            resultInitializer = " " + Converters.BuilderStatic.SyntaxNode(initializer);
                             break;
                         case Languages.Kotlin:
-                            outputVariable += $"({Converters.BuilderStatic.SyntaxNode(initializer.Value)})";
+                            resultInitializer = $"({Converters.BuilderStatic.SyntaxNode(initializer.Value)})";
                             break;
                         case Languages.TypeScript:
-                            outputVariable += $" {Converters.BuilderStatic.SyntaxNode(initializer)}";
+                            resultInitializer = $" {Converters.BuilderStatic.SyntaxNode(initializer)}";
+                            break;
+                        case Languages.Php:
+                            resultInitializer = $" {Converters.BuilderStatic.SyntaxNode(initializer)}";
                             break;
                     }
                 }
                 else
                 {
-                    if (initializer.Value.ToString() == "DateTime.UtcNow")
-                        outputVariable += " = \"\"";
+                    if (initializer.Value.ToString() == "DateTime.UtcNow" || initializer.Value.ToString() == "DateTime.Now")
+                        resultInitializer = " = \"\"";
                     else
-                        outputVariable += " " + Converters.BuilderStatic.SyntaxNode(initializer);
+                        resultInitializer = " " + Converters.BuilderStatic.SyntaxNode(initializer);
                 }
             }
+
+            var resultPostfix = "";
             if (isEnum)
             {
                 switch (Language)
                 {
                     case Languages.Swift:
-                        outputVariable += "";
+                        resultPostfix = "";
                         break;
                     case Languages.Kotlin:
-                        outputVariable += $",";
+                        resultPostfix = $",";
                         break;
                     case Languages.TypeScript:
-                        outputVariable += $",";
+                        resultPostfix = $",";
+                        break;
+                    case Languages.Php:
+                        resultPostfix = $";";
                         break;
                 }
             }
             else
             {
                 if (semicolonToken != null)
-                    outputVariable += Converters.BuilderStatic.Semicolon(semicolonToken.Value);
+                    resultPostfix = Converters.BuilderStatic.Semicolon(semicolonToken.Value);
             }
-            return outputVariable;
+
+            var result = "";
+            switch (Language)
+            {
+                case Languages.Php:
+                    result = $"{resultType}{resultPrefix}{(isEnum || isConst ? "" : "$")}{resultName}{resultInitializer}{resultPostfix}";
+                    break;
+                case Languages.TypeScript:
+                case Languages.Kotlin:
+                case Languages.Swift:
+                default:
+                    result = $"{resultPrefix}{resultName}{resultType}{resultInitializer}{resultPostfix}";
+                    break;
+            }
+
+            return result;
         }
 
         public string LanguageSyntaxTokenConvert(SyntaxToken source)
@@ -645,6 +707,7 @@ namespace ProtocolBuilder
                         case Languages.Kotlin:
                             result = "";
                             break;
+                        case Languages.Php:
                         case Languages.TypeScript:
                         default:
                             break;
@@ -654,6 +717,37 @@ namespace ProtocolBuilder
                     break;
             }
             return result;
+        }
+
+        public string LanguageEnumMemberSeparator()
+        {
+            string result = null;
+            switch (Language)
+            {
+                case Languages.Php:
+                case Languages.Swift:
+                    result = "\n";
+                    break;
+                case Languages.Kotlin:
+                case Languages.TypeScript:
+                default:
+                    break;
+            }
+            return result;
+        }
+
+        public string LanguageMemberAccessOperatorToken(SyntaxToken token)
+        {
+            switch (Language)
+            {
+                case Languages.Php:
+                    return "::";
+                case Languages.Swift:
+                case Languages.Kotlin:
+                case Languages.TypeScript:
+                default:
+                    return LanguageSyntaxTokenConvert(token);
+            }
         }
 
     }

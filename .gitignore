@@ -216,3 +216,4 @@ packages/
 
 #Mr Developer
 .vs/
+*.ignore/
