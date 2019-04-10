@@ -46,6 +46,8 @@ namespace ProtocolBuilder.Converters
                     return $"({SyntaxNode(statement.Expression)}).to{SyntaxNode(statement.Type)}()";
                 case Languages.TypeScript:
                     return $"{SyntaxNode(statement.Expression)} as {SyntaxNode(statement.Type)}";
+                case Languages.Php:
+                    return $"{SyntaxNode(statement.Expression)}";
                 case Languages.Swift:
                 default:
                     return $"{SyntaxNode(statement.Type)}({SyntaxNode(statement.Expression)})";
@@ -82,7 +84,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(MemberAccessExpressionSyntax))]
         public static string MemberAccessExpression(MemberAccessExpressionSyntax expression)
         {
-            var result = SyntaxNode(expression.Expression) + SyntaxTokenConvert(expression.OperatorToken) +
+            var result = SyntaxNode(expression.Expression) + "." +
                          SyntaxNode(expression.Name);
             switch (Builder.Instance.Language)
             {
@@ -120,6 +122,8 @@ namespace ProtocolBuilder.Converters
                     result = result.Replace("Math.Abs", "abs");
                     break;
             }
+            var operatorToken = Builder.Instance.LanguageMemberAccessOperatorToken(expression.OperatorToken);
+            result = result.Replace(".", operatorToken);
 
             return result;
         }
@@ -244,6 +248,9 @@ namespace ProtocolBuilder.Converters
                             r = "null";
                             break;
                         case Languages.TypeScript:
+                            r = "null";
+                            break;
+                        case Languages.Php:
                             r = "null";
                             break;
                     }

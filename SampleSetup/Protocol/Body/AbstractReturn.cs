@@ -6,8 +6,8 @@ namespace SampleProject.Protocol.Body
 {
     public abstract class AbstractReturn
     {
-        public int ResultEnumId;
+        public int ResultEnumId = 0;
 
-        public string ResultDescription;
+        public string ResultDescription = "";
     }
 }
