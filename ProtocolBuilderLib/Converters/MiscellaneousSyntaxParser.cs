@@ -11,10 +11,15 @@ namespace ProtocolBuilder.Converters
         /// <returns>The semicolon and newline</returns>
         public static string Semicolon(SyntaxToken semicolonToken)
         {
-            if (Builder.Instance.Language == Languages.TypeScript)
-                return ";";
-            else
-                return "";
+            switch (Builder.Instance.Language)
+            {
+                case Languages.TypeScript:
+                    return ";";
+                case Languages.Php:
+                    return ";";
+                default:
+                    return "";
+            }
         }
     }
 }

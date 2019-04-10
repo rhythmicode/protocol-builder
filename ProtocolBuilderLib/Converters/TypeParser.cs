@@ -24,6 +24,7 @@ namespace ProtocolBuilder.Converters
                 case "string":
                     switch (Builder.Instance.Language)
                     {
+                        case Languages.Php:
                         case Languages.TypeScript:
                             result = "string";
                             break;
@@ -40,6 +41,9 @@ namespace ProtocolBuilder.Converters
                     {
                         case Languages.TypeScript:
                             result = "number";
+                            break;
+                        case Languages.Php:
+                            result = "int";
                             break;
                         default:
                             result = "Int";
@@ -58,6 +62,9 @@ namespace ProtocolBuilder.Converters
                         case Languages.TypeScript:
                             result = "number";
                             break;
+                        case Languages.Php:
+                            result = "int";
+                            break;
                     }
                     break;
                 case "double":
@@ -65,6 +72,9 @@ namespace ProtocolBuilder.Converters
                     {
                         case Languages.TypeScript:
                             result = "number";
+                            break;
+                        case Languages.Php:
+                            result = "float";
                             break;
                         default:
                             result = "Double";
@@ -77,6 +87,9 @@ namespace ProtocolBuilder.Converters
                         case Languages.TypeScript:
                             result = "number";
                             break;
+                        case Languages.Php:
+                            result = "float";
+                            break;
                         default:
                             result = "Double";
                             break;
@@ -87,6 +100,9 @@ namespace ProtocolBuilder.Converters
                     {
                         case Languages.TypeScript:
                             result = "void";
+                            break;
+                        case Languages.Php:
+                            result = "";
                             break;
                         case Languages.Swift:
                             result = "Void";
@@ -99,6 +115,9 @@ namespace ProtocolBuilder.Converters
                 case "bool":
                     switch (Builder.Instance.Language)
                     {
+                        case Languages.Php:
+                            result = "bool";
+                            break;
                         case Languages.TypeScript:
                             result = "boolean";
                             break;
