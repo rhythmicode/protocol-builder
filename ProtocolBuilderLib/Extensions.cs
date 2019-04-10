@@ -10,6 +10,10 @@ namespace ProtocolBuilder
 {
     public static class Extensions
     {
+        public static bool IsInsideEnum(this SyntaxToken node)
+        {
+            return node.Parent?.IsInsideEnum() == true;
+        }
         public static bool IsInsideEnum(this SyntaxNode node)
         {
             if (node == null) return false;

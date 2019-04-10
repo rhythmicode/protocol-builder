@@ -144,7 +144,7 @@ namespace ProtocolBuilder.Converters
                         else
                             output += $": {declaration.BaseList.ToString().Trim(' ', ':')}()";
                         break;
-                    case Languages.TypeScript:
+                    case Languages.Php:
                         if (baseType != null)
                             output += $" extends {SyntaxNode(baseType).TrimEnd()}";
                         else if (typeGeneric != null)
@@ -272,6 +272,13 @@ namespace ProtocolBuilder.Converters
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value)}";
                     }
                     break;
+                case Languages.Php:
+                    output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}public const {declaration.Identifier.ToString().TrimEnd()}";
+                    if (declaration.EqualsValue != null)
+                    {
+                        output += $" = {SyntaxNode(declaration.EqualsValue.Value).TrimEnd()};";
+                    }
+                    break;
             }
 
             return output;
@@ -325,7 +332,7 @@ namespace ProtocolBuilder.Converters
                 " "
                 + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
                 + declaration.Members.ConvertSeparatedSyntaxList(
-                    separatorForced: Builder.Instance.Language == Languages.Swift ? "\n" : null
+                    separatorForced: Builder.Instance.LanguageEnumMemberSeparator()
                 ).TrimEnd()
                 + NewLine
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
@@ -374,8 +381,7 @@ namespace ProtocolBuilder.Converters
 
             return declaration.ConvertTo(
                 output +
-                Builder.Instance.LanguageDeclarationPart1(false, false, false, false) +
-                Builder.Instance.LanguageDeclarationPart2(declaration.IsInsideEnum(), false, false, false, declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer, declaration.SemicolonToken)
+                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false, declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer, declaration.SemicolonToken)
             );
         }
 

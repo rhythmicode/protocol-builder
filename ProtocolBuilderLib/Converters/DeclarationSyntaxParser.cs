@@ -59,11 +59,10 @@ namespace ProtocolBuilder.Converters
                     break;
             }
 
-            output = Builder.Instance.LanguageDeclarationPart1(isEnum, isStatic, isConst, declareAsReadOnly);
-
+            output = "";
             output += declaration.Variables.ConvertSeparatedSyntaxList(currVar =>
             {
-                return Builder.Instance.LanguageDeclarationPart2(
+                return Builder.Instance.LanguageDeclaration(
                     isEnum,
                     isStatic,
                     isConst,
