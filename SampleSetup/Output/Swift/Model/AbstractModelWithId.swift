@@ -1,4 +1,3 @@
-
 struct AbstractModelWithId: Codable {
     let Id: String
 

@@ -1,4 +1,3 @@
-
 package SampleProject.Protocol.Model
 
 open class AbstractModelWithId {

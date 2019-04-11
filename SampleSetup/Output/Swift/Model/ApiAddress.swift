@@ -1,4 +1,3 @@
-
     struct ApiAddress: Codable, AbstractModelWithId
  {
         var CountryId: String

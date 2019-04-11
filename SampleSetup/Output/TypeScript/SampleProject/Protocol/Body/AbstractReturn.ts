@@ -1,6 +1,5 @@
-
 export class AbstractReturn {
-    ResultEnumId: number;
+    ResultEnumId: number = 0;
 
-    ResultDescription: string;
+    ResultDescription: string = "";
 }

@@ -1,4 +1,3 @@
-
 package SampleProject.Protocol.Model
 
 import SampleProject.Protocol.Model.*

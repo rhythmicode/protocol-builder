@@ -1,4 +1,3 @@
-
 export class ApiUserRegisterArg {
     UserName: string = "";
     UserNameKind: number = 0;

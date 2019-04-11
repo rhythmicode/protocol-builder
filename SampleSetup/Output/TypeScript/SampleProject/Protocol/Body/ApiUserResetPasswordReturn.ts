@@ -1,5 +1,4 @@
-
 import { AbstractReturn } from './AbstractReturn';
-export class ApiUserResetPasswordReturn extends AbstractReturn {
+export class ApiUserResetPasswordReturn {
     ErrorCodes: Array<string>;
 }

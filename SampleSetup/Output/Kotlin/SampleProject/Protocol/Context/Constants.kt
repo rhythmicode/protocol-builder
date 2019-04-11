@@ -1,4 +1,3 @@
-
 package SampleProject.Protocol.Context
 
 import SampleProject.Protocol.Context.*

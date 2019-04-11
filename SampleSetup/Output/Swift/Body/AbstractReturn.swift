@@ -1,6 +1,5 @@
-
 struct AbstractReturn: Codable {
-    let ResultEnumId: Int
+    var ResultEnumId: Int = 0
 
-    let ResultDescription: String
+    var ResultDescription: String = ""
 }

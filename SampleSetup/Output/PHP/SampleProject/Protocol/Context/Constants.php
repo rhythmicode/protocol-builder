@@ -1,9 +1,6 @@
-
 <?php
-namespace Virta\SampleProject\Protocol\Context;
-
-use Virta\SampleProject\Protocol\Context\CurrencyTypes;
-use Virta\SampleProject\Protocol\Context\Languages;
+require_once(dirname(__FILE__).'/./CurrencyTypes.php');
+require_once(dirname(__FILE__).'/./Languages.php');
 class Constants {
     /** @var int */ public const DefaultCurrencyEnumId = CurrencyTypes::EUR;
     /** @var string */ public const DefaultLanguage = Languages::English;

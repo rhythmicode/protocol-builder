@@ -1,4 +1,3 @@
-
     struct ApiUserRegisterReturn: Codable, AbstractReturn
  {
         var Token: ApiTokenPostReturn

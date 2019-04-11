@@ -1,8 +1,5 @@
-
 <?php
-namespace Virta\SampleProject\Protocol\Body;
-
-use Virta\SampleProject\Protocol\Body\AbstractReturn;
+require_once(dirname(__FILE__).'/./AbstractReturn.php');
 class ApiUserResetPasswordReturn extends AbstractReturn {
     /** @var string[] */ public $ErrorCodes;
 }

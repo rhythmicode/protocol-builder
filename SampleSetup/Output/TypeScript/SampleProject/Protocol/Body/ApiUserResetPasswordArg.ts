@@ -1,4 +1,3 @@
-
 export class ApiUserResetPasswordArg {
     UserId: string;
 

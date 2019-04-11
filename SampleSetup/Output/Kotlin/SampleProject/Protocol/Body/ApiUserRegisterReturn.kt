@@ -1,4 +1,3 @@
-
 package SampleProject.Protocol.Body
 
 import SampleProject.Protocol.Body.*
