@@ -1,8 +1,10 @@
 
 <?php
-require_once(dirname(__FILE__).'/./AbstractModelWithId.php');
-require_once(dirname(__FILE__).'/./ApiCountry.php');
-require_once(dirname(__FILE__).'/./ApiAddress.php');
+namespace Virta\SampleProject\Protocol\Model;
+
+use Virta\SampleProject\Protocol\Model\AbstractModelWithId;
+use Virta\SampleProject\Protocol\Model\ApiCountry;
+use Virta\SampleProject\Protocol\Model\ApiAddress;
 class ApiCity extends AbstractModelWithId {
     /** @var string */ public $CountryId;
 

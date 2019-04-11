@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.MSBuild;
-using ProtocolBuilder;
 using ProtocolBuilder.Converters;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace ProtocolBuilder
         public Languages Language { get; set; } = Languages.Swift;
 
         /// <summary>
-        /// Path to the file to parse
+        /// Path to the folder to parse
         /// </summary>
         public string InputPath { get; set; }
 
@@ -31,9 +30,14 @@ namespace ProtocolBuilder
         public bool Indent { get; set; }
 
         /// <summary>
-        /// Path to the output .swift file
+        /// Path to the output folder
         /// </summary>
         public string OutputPath { get; set; }
+
+        /// <summary>
+        /// Root Namespace
+        /// </summary>
+        public string Namespace { get; set; } = null;
 
         public Builder(string[] args)
         {
@@ -89,6 +93,10 @@ namespace ProtocolBuilder
                                 default:
                                     throw new ArgumentException("Language parameter is not correct/supported.");
                             }
+                            break;
+                        case "namespace":
+                        case "n":
+                            Namespace = arg;
                             break;
                     }
                     namedArgument = null;
@@ -286,27 +294,38 @@ namespace ProtocolBuilder
                 case Languages.Swift:
                     break;
                 case Languages.Kotlin:
-                    output += $"package {rootNamespace.Name}{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
-                    var imports = new List<string>();
-                    foreach (var fe1 in root.Usings.Where(a1 => !a1.Name.ToString().ToLower().StartsWith("system")
-                                                                && !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
-                    ))
                     {
-                        var fe1Name = fe1.Name.ToString();
-                        if (!string.IsNullOrWhiteSpace(fe1.Alias?.ToString()))
-                            fe1Name = fe1Name.Replace($".{fe1.Alias.Name.ToString()}", "");
-                        imports.Add($"import {fe1Name}.*");
+                        output += $"package {rootNamespace.Name}{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
+                        var imports = ParseUsings(root)
+                            .Select(a => $"import {a.ns}.*")
+                            .ToList();
+                        if (imports.Count > 0)
+                            output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                     }
-                    if (imports.Count > 0)
-                        output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                     break;
                 case Languages.TypeScript:
-                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
+                    foreach (var feUsingParsed in ParseUsingsAsRelativePath(root, rootNamespace))
                         output += $"import {{ { feUsingParsed.name } }} from '{feUsingParsed.relativePath}';{BuilderStatic.NewLine}";
                     break;
                 case Languages.Php:
-                    foreach (var feUsingParsed in ParseUsingsWithAlias(root, rootNamespace))
-                        output += $"require_once(dirname(__FILE__).'/{ feUsingParsed.relativePath }.php');{BuilderStatic.NewLine}";
+                    {
+                        if (Namespace != null)
+                        {
+                            var namespacePrefix = string.IsNullOrWhiteSpace(Namespace) ? "" : $"{Namespace}\\";
+                            output += $"namespace {namespacePrefix}{rootNamespace.Name.ToString().Replace(".", "\\")};{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
+                            var imports = ParseUsings(root)
+                                .Where(a => !string.IsNullOrWhiteSpace(a.alias))
+                                .Select(a => $"use {namespacePrefix}{a.ns.Replace(".", "\\")}\\{a.alias};")
+                                .ToList();
+                            if (imports.Count > 0)
+                                output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
+                        }
+                        else
+                        {
+                            foreach (var feUsingParsed in ParseUsingsAsRelativePath(root, rootNamespace))
+                                output += $"require_once(dirname(__FILE__).'/{ feUsingParsed.relativePath }.php');{BuilderStatic.NewLine}";
+                        }
+                    }
                     break;
             }
 
@@ -360,7 +379,23 @@ namespace ProtocolBuilder
             return (saveRelativeDir, output);
         }
 
-        private static List<(string relativePath, string name)> ParseUsingsWithAlias(CompilationUnitSyntax root, NamespaceDeclarationSyntax rootNamespace)
+        private static List<(string ns, string alias)> ParseUsings(CompilationUnitSyntax root)
+        {
+            var result = new List<(string ns, string alias)>();
+            foreach (var fe1 in root.Usings.Where(a1 => !a1.Name.ToString().ToLower().StartsWith("system")
+                                                        && !a1.Name.ToString().StartsWith(nameof(ProtocolBuilder))
+            ))
+            {
+                var fe1Name = fe1.Name.ToString();
+                var fe1Alias = fe1.Alias?.Name?.ToString();
+                if (!string.IsNullOrWhiteSpace(fe1Alias))
+                    fe1Name = fe1Name.Replace($".{fe1Alias}", "");
+                result.Add((ns: fe1Name, alias: fe1Alias));
+            }
+            return result;
+        }
+
+        private static List<(string relativePath, string name)> ParseUsingsAsRelativePath(CompilationUnitSyntax root, NamespaceDeclarationSyntax rootNamespace)
         {
             var result = new List<(string relativePath, string name)>();
             var rootNamespaceSections = rootNamespace

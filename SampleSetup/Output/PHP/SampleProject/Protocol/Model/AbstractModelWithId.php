@@ -1,5 +1,7 @@
 
 <?php
+namespace Virta\SampleProject\Protocol\Model;
+
 class AbstractModelWithId {
     /** @var string */ public $Id;
 

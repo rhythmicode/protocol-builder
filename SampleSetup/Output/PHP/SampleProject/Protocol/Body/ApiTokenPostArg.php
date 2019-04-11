@@ -1,5 +1,7 @@
 
 <?php
+namespace Virta\SampleProject\Protocol\Body;
+
 class ApiTokenPostArg {
     /** @var string */ public $UserName = "";
     /** @var int */ public $UserNameKind = 0;
