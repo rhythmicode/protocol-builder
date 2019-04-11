@@ -351,11 +351,6 @@ namespace ProtocolBuilder
             }
 
             output = ""
-                     //+ (string.IsNullOrWhiteSpace(summaryText) ? "" : (summaryText + ConvertToSwift.NewLine))
-                     + BuilderStatic.NewLine
-                     //+ "import RxSwift"
-                     //+ ConvertToSwift.NewLine
-                     //+ ConvertToSwift.NewLine
                      + output
                      + BuilderStatic.NewLine;
 

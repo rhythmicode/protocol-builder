@@ -1,4 +1,3 @@
-
 struct ApiUserRegisterArg: Codable {
     var UserName: String = ""
     var UserNameKind: Int = 0

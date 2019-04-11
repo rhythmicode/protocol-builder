@@ -1,4 +1,3 @@
-
 package SampleProject.Protocol.Body
 
 open class ApiUserRegisterArg {

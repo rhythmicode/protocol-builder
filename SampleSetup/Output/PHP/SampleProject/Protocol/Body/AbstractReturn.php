@@ -1,7 +1,4 @@
-
 <?php
-namespace Virta\SampleProject\Protocol\Body;
-
 class AbstractReturn {
     /** @var int */ public $ResultEnumId = 0;
 

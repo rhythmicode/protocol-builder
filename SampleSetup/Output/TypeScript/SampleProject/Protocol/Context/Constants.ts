@@ -1,4 +1,3 @@
-
 import { CurrencyTypes } from './CurrencyTypes';
 import { Languages } from './Languages';
 export class Constants {
