@@ -13,7 +13,9 @@ namespace ProtocolBuilderCli
                 "-o",
                 System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\PHP\"),
                 "-l",
-                "php"
+                "php",
+                "-n",
+                ""
             };
 #endif
 

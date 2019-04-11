@@ -1,5 +1,7 @@
 
 <?php
+namespace Virta\SampleProject\Protocol\Body;
+
 class ApiUserResetPasswordArg {
     /** @var string */ public $UserId;
 

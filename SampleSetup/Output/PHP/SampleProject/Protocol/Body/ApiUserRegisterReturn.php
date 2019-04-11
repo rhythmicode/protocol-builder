@@ -1,7 +1,9 @@
 
 <?php
-require_once(dirname(__FILE__).'/./AbstractReturn.php');
-require_once(dirname(__FILE__).'/./ApiTokenPostReturn.php');
+namespace Virta\SampleProject\Protocol\Body;
+
+use Virta\SampleProject\Protocol\Body\AbstractReturn;
+use Virta\SampleProject\Protocol\Body\ApiTokenPostReturn;
 class ApiUserRegisterReturn extends AbstractReturn {
     /** @var ApiTokenPostReturn */ public $Token;
 
