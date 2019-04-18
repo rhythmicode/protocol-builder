@@ -80,7 +80,7 @@ namespace ProtocolBuilder.Converters
                     case Languages.TypeScript:
                         return "Array<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
                     case Languages.Php:
-                        return name.IsInsideObjectCreation() ? "[]" : SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "[]";
+                        return SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "[]";
                     default:
                         throw new ArgumentException();
                 }
