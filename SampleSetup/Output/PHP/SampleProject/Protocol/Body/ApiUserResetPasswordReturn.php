@@ -1,5 +1,7 @@
 <?php
-require_once(dirname(__FILE__).'/./AbstractReturn.php');
+namespace SampleProject\Protocol\Body;
+
+use SampleProject\Protocol\Body\AbstractReturn;
 class ApiUserResetPasswordReturn extends AbstractReturn {
     /** @var string[] */ public $ErrorCodes;
 }

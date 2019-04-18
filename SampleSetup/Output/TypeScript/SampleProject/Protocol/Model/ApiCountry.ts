@@ -10,8 +10,8 @@ export class ApiCountry extends AbstractModelWithId {
 
     Code: string;
 
-    Cities: Array<ApiCity>;
+    Cities: Array<ApiCity> = new Array<ApiCity>();
 
-    Addresses: Array<ApiAddress>;
+    Addresses: Array<ApiAddress> = new Array<ApiAddress>();
 
 }

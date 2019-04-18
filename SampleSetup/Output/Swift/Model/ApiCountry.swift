@@ -8,9 +8,9 @@
 
         var Code: String
 
-        var Cities: [ApiCity]
+        var Cities: [ApiCity] = [ApiCity]()
 
-        var Addresses: [ApiAddress]
+        var Addresses: [ApiAddress] = [ApiAddress]()
 
     }
 

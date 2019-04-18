@@ -173,6 +173,18 @@ namespace ProtocolBuilder.Converters
                 }
 
                 //NOTE: this takes out expression.parent and everything, and probably screws with SyntaxModel stuff to
+                switch (Builder.Instance.Language)
+                {
+                    case Languages.Php:
+                        if (expression.Type.IsTypeList() || expression.Type.IsTypeDictionary())
+                            return $"[{namedArgumentsList.ConvertSeparatedSyntaxList()}]";
+                        break;
+                    case Languages.Swift:
+                    case Languages.Kotlin:
+                    case Languages.TypeScript:
+                    default:
+                        break;
+                }
                 return SyntaxTokenConvert(expression.NewKeyword) + SyntaxNode(expression.Type) + SyntaxNode(SyntaxFactory.ArgumentList(namedArgumentsList));
             }
             else

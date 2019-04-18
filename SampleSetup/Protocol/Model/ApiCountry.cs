@@ -17,9 +17,9 @@ namespace SampleProject.Protocol.Model
 
         public string Code { get; set; }
 
-        public List<ApiCity> Cities { get; set; }
+        public List<ApiCity> Cities { get; set; } = new List<ApiCity>();
 
-        public List<ApiAddress> Addresses { get; set; }
+        public List<ApiAddress> Addresses { get; set; } = new List<ApiAddress>();
 
     }
 }

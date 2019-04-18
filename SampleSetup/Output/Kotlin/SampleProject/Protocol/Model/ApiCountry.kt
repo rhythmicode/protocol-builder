@@ -10,8 +10,8 @@ open class ApiCountry: AbstractModelWithId() {
 
     var Code: String
 
-    var Cities: ArrayList<ApiCity>
+    var Cities: ArrayList<ApiCity> = ArrayList<ApiCity>()
 
-    var Addresses: ArrayList<ApiAddress>
+    var Addresses: ArrayList<ApiAddress> = ArrayList<ApiAddress>()
 
 }
