@@ -144,6 +144,14 @@ namespace ProtocolBuilder.Converters
                         else
                             output += $": {declaration.BaseList.ToString().Trim(' ', ':')}()";
                         break;
+                    case Languages.TypeScript:
+                        if (baseType != null)
+                            output += $" extends {SyntaxNode(baseType).TrimEnd()}";
+                        else if (typeGeneric != null)
+                            output += $" extends {SyntaxNode(typeGeneric).TrimEnd()}";
+                        else
+                            output += $" extends {declaration.BaseList.ToString().Trim(' ', ':')}";
+                        break;
                     case Languages.Php:
                         if (baseType != null)
                             output += $" extends {SyntaxNode(baseType).TrimEnd()}";

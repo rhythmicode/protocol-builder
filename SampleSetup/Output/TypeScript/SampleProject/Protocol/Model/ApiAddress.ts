@@ -1,7 +1,7 @@
 import { AbstractModelWithId } from './AbstractModelWithId';
 import { ApiCountry } from './ApiCountry';
 import { ApiCity } from './ApiCity';
-export class ApiAddress {
+export class ApiAddress extends AbstractModelWithId {
     CountryId: string;
 
     Country: ApiCountry;
