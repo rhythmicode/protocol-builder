@@ -1,4 +1,6 @@
 <?php
+namespace SampleProject\Protocol\Model;
+
 class AbstractModelWithId {
     /** @var string */ public $Id;
 

@@ -1,4 +1,6 @@
 <?php
+namespace SampleProject\Protocol\Body;
+
 class ApiUserRegisterArg {
     /** @var string */ public $UserName = "";
     /** @var int */ public $UserNameKind = 0;

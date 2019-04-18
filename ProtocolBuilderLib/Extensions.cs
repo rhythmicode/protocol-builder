@@ -32,5 +32,15 @@ namespace ProtocolBuilder
                 return IsInsideEnum(node.Parent);
             }
         }
+
+        public static bool IsTypeList(this TypeSyntax source)
+        {
+            return (source as GenericNameSyntax)?.Identifier.Text?.ToLower() == "list";
+        }
+
+        public static bool IsTypeDictionary(this TypeSyntax source)
+        {
+            return (source as GenericNameSyntax)?.Identifier.Text?.ToLower() == "dictionary";
+        }
     }
 }

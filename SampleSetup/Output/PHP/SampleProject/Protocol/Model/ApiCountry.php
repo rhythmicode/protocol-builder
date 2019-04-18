@@ -1,7 +1,9 @@
 <?php
-require_once(dirname(__FILE__).'/./AbstractModelWithId.php');
-require_once(dirname(__FILE__).'/./ApiCity.php');
-require_once(dirname(__FILE__).'/./ApiAddress.php');
+namespace SampleProject\Protocol\Model;
+
+use SampleProject\Protocol\Model\AbstractModelWithId;
+use SampleProject\Protocol\Model\ApiCity;
+use SampleProject\Protocol\Model\ApiAddress;
 class ApiCountry extends AbstractModelWithId {
     /** @var string */ public $TitleShort;
 
@@ -11,8 +13,8 @@ class ApiCountry extends AbstractModelWithId {
 
     /** @var string */ public $Code;
 
-    /** @var ApiCity[] */ public $Cities;
+    /** @var ApiCity[] */ public $Cities = [];
 
-    /** @var ApiAddress[] */ public $Addresses;
+    /** @var ApiAddress[] */ public $Addresses = [];
 
 }

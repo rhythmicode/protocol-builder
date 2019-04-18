@@ -69,7 +69,7 @@ namespace ProtocolBuilder.Converters
             }
 
             //Something<another, thing> converts to Something<another, thing> :D
-            if (name.Identifier.Text.ToLower() == "list")
+            if (name.IsTypeList())
             {
                 switch (Builder.Instance.Language)
                 {
@@ -80,12 +80,12 @@ namespace ProtocolBuilder.Converters
                     case Languages.TypeScript:
                         return "Array<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
                     case Languages.Php:
-                        return SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "[]";
+                        return name.IsInsideObjectCreation() ? "[]" : SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "[]";
                     default:
                         throw new ArgumentException();
                 }
             }
-            else if (name.Identifier.Text.ToLower() == "dictionary")
+            else if (name.IsTypeDictionary())
             {
                 switch (Builder.Instance.Language)
                 {

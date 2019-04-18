@@ -1,6 +1,8 @@
 <?php
-require_once(dirname(__FILE__).'/./AbstractReturn.php');
-require_once(dirname(__FILE__).'/./ApiTokenPostReturn.php');
+namespace SampleProject\Protocol\Body;
+
+use SampleProject\Protocol\Body\AbstractReturn;
+use SampleProject\Protocol\Body\ApiTokenPostReturn;
 class ApiUserRegisterReturn extends AbstractReturn {
     /** @var ApiTokenPostReturn */ public $Token;
 
