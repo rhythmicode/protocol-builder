@@ -15,6 +15,11 @@ namespace ProtocolBuilder.Converters
         public static readonly string NewLine = Environment.NewLine;
 
         /// <summary>
+        /// The newline character to use for the outputted Swift code
+        /// </summary>
+        public const string Indent = "    ";
+
+        /// <summary>
         /// The Roslyn SemanticModel to reference when converting C# code
         /// </summary>
         public static SemanticModel Model;
@@ -42,7 +47,7 @@ namespace ProtocolBuilder.Converters
             if (node is BlockSyntax)
             {
                 //Block() takes two arguments, & I don't want to worry about it w/ reflection.
-                return Block((BlockSyntax) node);
+                return Block((BlockSyntax)node);
             }
 
             /*
@@ -60,7 +65,7 @@ namespace ProtocolBuilder.Converters
 
             if (matchedMethod != null)
             {
-                return matchedMethod.Invoke(new BuilderStatic(), new[] {node}).ToString();
+                return matchedMethod.Invoke(new BuilderStatic(), new[] { node }).ToString();
             }
 
             return node + NewLine;
