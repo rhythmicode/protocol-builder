@@ -97,6 +97,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(ClassDeclarationSyntax))]
         public static string ClassDeclaration(ClassDeclarationSyntax declaration)
         {
+            Builder.Instance.ClassConstructorLines.Clear();
             var parsedAttributes =
                 ParseAttributes(declaration.AttributeLists, NewLine + declaration.GetLeadingTrivia().ToFullString());
             var nameToUse = parsedAttributes.Item2;
@@ -163,10 +164,13 @@ namespace ProtocolBuilder.Converters
                 }
             }
 
+            var outputMembers = declaration.Members.ConvertSyntaxList();
+            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor();
             output +=
                 " "
                 + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
-                + declaration.Members.ConvertSyntaxList()
+                + outputMembers
+                + outputConstructor
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
             return output;
         }
@@ -281,7 +285,7 @@ namespace ProtocolBuilder.Converters
                     }
                     break;
                 case Languages.Php:
-                    output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}public const {declaration.Identifier.ToString().TrimEnd()}";
+                    output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
                     if (declaration.EqualsValue != null)
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value).TrimEnd()};";

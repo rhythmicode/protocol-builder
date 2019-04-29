@@ -13,8 +13,14 @@ class ApiCountry extends AbstractModelWithId {
 
     /** @var string */ public $Code;
 
-    /** @var ApiCity[] */ public $Cities = [];
+    /** @var ApiCity[] */ public $Cities;
 
-    /** @var ApiAddress[] */ public $Addresses = [];
+    /** @var ApiAddress[] */ public $Addresses;
+
+    public function __construct()
+    {
+        $this->Cities = [];
+        $this->Addresses = [];
+    }
 
 }

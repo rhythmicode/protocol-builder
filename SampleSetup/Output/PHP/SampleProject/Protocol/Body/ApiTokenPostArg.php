@@ -2,7 +2,14 @@
 namespace SampleProject\Protocol\Body;
 
 class ApiTokenPostArg {
-    /** @var string */ public $UserName = "";
-    /** @var int */ public $UserNameKind = 0;
-    /** @var string */ public $Password = "";
+    /** @var string */ public $UserName;
+    /** @var int */ public $UserNameKind;
+    /** @var string */ public $Password;
+
+    public function __construct()
+    {
+        $this->UserName = "";
+        $this->UserNameKind = 0;
+        $this->Password = "";
+    }
 }

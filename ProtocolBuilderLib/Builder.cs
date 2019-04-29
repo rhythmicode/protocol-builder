@@ -567,6 +567,8 @@ namespace ProtocolBuilder
             }
         }
 
+        public List<string> ClassConstructorLines { get; set; } = new List<string>();
+
         public string LanguageDeclaration(
             bool isEnum,
             bool isStatic,
@@ -592,7 +594,7 @@ namespace ProtocolBuilder
                         resultPrefix = $"";
                         break;
                     case Languages.Php:
-                        resultPrefix = $"public const ";
+                        resultPrefix = $"const ";
                         break;
                 }
             }
@@ -613,7 +615,7 @@ namespace ProtocolBuilder
                         break;
                     case Languages.Php:
                         resultPrefix =
-                            $"public {(isConst ? "const " : (isStatic ? "static " : ""))}";
+                            $"{(isConst ? "" : "public ")}{(isConst ? "const " : (isStatic ? "static " : ""))}";
                         break;
                 }
             }
@@ -680,6 +682,19 @@ namespace ProtocolBuilder
                         resultInitializer = " = \"\"";
                     else
                         resultInitializer = " " + Converters.BuilderStatic.SyntaxNode(initializer);
+
+                    switch (Language)
+                    {
+                        case Languages.Php:
+                            ClassConstructorLines.Add($"$this->{resultName}{resultInitializer}");
+                            resultInitializer = "";
+                            break;
+                        case Languages.Swift:
+                        case Languages.Kotlin:
+                        case Languages.TypeScript:
+                        default:
+                            break;
+                    }
                 }
             }
 
@@ -780,5 +795,29 @@ namespace ProtocolBuilder
             }
         }
 
+        public string LanguageConvertClassConstructor()
+        {
+            var result = "";
+            if (ClassConstructorLines.Count > 0)
+            {
+                switch (Language)
+                {
+                    case Languages.Php:
+                        result = $@"
+{BuilderStatic.Indent}{BuilderStatic.Indent}public function __construct()
+{BuilderStatic.Indent}{BuilderStatic.Indent}{{
+{string.Join(BuilderStatic.NewLine, ClassConstructorLines.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a};"))}
+{BuilderStatic.Indent}{BuilderStatic.Indent}}}
+";
+                        break;
+                    case Languages.Swift:
+                    case Languages.Kotlin:
+                    case Languages.TypeScript:
+                    default:
+                        break;
+                }
+            }
+            return result;
+        }
     }
 }
