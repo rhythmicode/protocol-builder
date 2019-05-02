@@ -97,6 +97,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(ClassDeclarationSyntax))]
         public static string ClassDeclaration(ClassDeclarationSyntax declaration)
         {
+            Builder.Instance.EnumMapToNames.Clear();
             Builder.Instance.ClassConstructorLines.Clear();
             var parsedAttributes =
                 ParseAttributes(declaration.AttributeLists, NewLine + declaration.GetLeadingTrivia().ToFullString());
@@ -104,7 +105,8 @@ namespace ProtocolBuilder.Converters
 
             var output = declaration.GetLeadingTrivia().ToFullString();
             var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static") == true;
-            if (declaration.AttributeLists.Any(a1 => a1.ToString().ToLower().Contains("enumasstring")))
+            var isEnum = declaration.IsInsideEnum();
+            if (isEnum)
             {
                 output +=
                     Builder.Instance.LanguageConvertEnum()
@@ -166,11 +168,15 @@ namespace ProtocolBuilder.Converters
 
             var outputMembers = declaration.Members.ConvertSyntaxList();
             var outputConstructor = Builder.Instance.LanguageConvertClassConstructor();
+            var outputEnumMapToName = "";
+            if (isEnum)
+                outputEnumMapToName = Builder.Instance.LanguageConvertEnumMapToName();
             output +=
                 " "
                 + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
                 + outputMembers
                 + outputConstructor
+                + outputEnumMapToName
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
             return output;
         }
@@ -292,6 +298,8 @@ namespace ProtocolBuilder.Converters
                     }
                     break;
             }
+            if (declaration.EqualsValue != null)
+                Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(), SyntaxTokenConvert(declaration.Identifier).Trim());
 
             return output;
         }
@@ -305,6 +313,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(EnumDeclarationSyntax))]
         public static string EnumDeclaration(EnumDeclarationSyntax declaration)
         {
+            Builder.Instance.EnumMapToNames.Clear();
             var parsedAttributes = ParseAttributes(declaration.AttributeLists);
 
             var output = declaration.GetLeadingTrivia().ToFullString();
@@ -340,13 +349,16 @@ namespace ProtocolBuilder.Converters
                 break;
             }
 
+            var outputMembers = declaration.Members.ConvertSeparatedSyntaxList(
+                separatorForced: Builder.Instance.LanguageEnumMemberSeparator()
+            ).TrimEnd();
+            var outputEnumMapToName = Builder.Instance.LanguageConvertEnumMapToName();
             output +=
                 " "
                 + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
-                + declaration.Members.ConvertSeparatedSyntaxList(
-                    separatorForced: Builder.Instance.LanguageEnumMemberSeparator()
-                ).TrimEnd()
+                + outputMembers
                 + NewLine
+                + outputEnumMapToName
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
             return output;
         }
