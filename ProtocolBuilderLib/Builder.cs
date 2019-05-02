@@ -569,6 +569,8 @@ namespace ProtocolBuilder
 
         public List<string> ClassConstructorLines { get; set; } = new List<string>();
 
+        public Dictionary<string, string> EnumMapToNames { get; set; } = new Dictionary<string, string>();
+
         public string LanguageDeclaration(
             bool isEnum,
             bool isStatic,
@@ -636,7 +638,7 @@ namespace ProtocolBuilder
                 switch (Language)
                 {
                     case Languages.Php:
-                        resultType = $"/** @var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")} */ ";
+                        resultType = isConst ? "" : $"/** @var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")} */ ";
                         break;
                     case Languages.TypeScript:
                         resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? " | null" : "")}";
@@ -649,6 +651,7 @@ namespace ProtocolBuilder
                 }
             }
 
+            var resultInitializerValue = "";
             var resultInitializer = "";
             if (initializer != null &&
                 (
@@ -658,6 +661,7 @@ namespace ProtocolBuilder
                     || isStatic
                 ))
             {
+                resultInitializerValue = Converters.BuilderStatic.SyntaxNode(initializer.Value);
                 if (isEnum)
                 {
                     switch (Language)
@@ -666,7 +670,7 @@ namespace ProtocolBuilder
                             resultInitializer = " " + Converters.BuilderStatic.SyntaxNode(initializer);
                             break;
                         case Languages.Kotlin:
-                            resultInitializer = $"({Converters.BuilderStatic.SyntaxNode(initializer.Value)})";
+                            resultInitializer = $"({resultInitializerValue})";
                             break;
                         case Languages.TypeScript:
                             resultInitializer = $" {Converters.BuilderStatic.SyntaxNode(initializer)}";
@@ -686,8 +690,11 @@ namespace ProtocolBuilder
                     switch (Language)
                     {
                         case Languages.Php:
-                            ClassConstructorLines.Add($"$this->{resultName}{resultInitializer}");
-                            resultInitializer = "";
+                            if (!isConst)
+                            {
+                                ClassConstructorLines.Add($"$this->{resultName}{resultInitializer}");
+                                resultInitializer = "";
+                            }
                             break;
                         case Languages.Swift:
                         case Languages.Kotlin:
@@ -721,6 +728,11 @@ namespace ProtocolBuilder
             {
                 if (semicolonToken != null)
                     resultPostfix = Converters.BuilderStatic.Semicolon(semicolonToken.Value);
+            }
+
+            if (isEnum)
+            {
+                EnumMapToNames.Add(resultInitializerValue, resultName);
             }
 
             var result = "";
@@ -809,6 +821,29 @@ namespace ProtocolBuilder
 {string.Join(BuilderStatic.NewLine, ClassConstructorLines.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a};"))}
 {BuilderStatic.Indent}{BuilderStatic.Indent}}}
 ";
+                        break;
+                    case Languages.Swift:
+                    case Languages.Kotlin:
+                    case Languages.TypeScript:
+                    default:
+                        break;
+                }
+            }
+            return result;
+        }
+
+        public string LanguageConvertEnumMapToName()
+        {
+            var result = "";
+            if (EnumMapToNames.Count > 0)
+            {
+                switch (Language)
+                {
+                    case Languages.Php:
+                        result = $@"
+{BuilderStatic.Indent}{BuilderStatic.Indent}const MapToName = array(
+{string.Join("," + BuilderStatic.NewLine, EnumMapToNames.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a.Key} => \"{a.Value}\""))}
+{BuilderStatic.Indent}{BuilderStatic.Indent});{BuilderStatic.NewLine}";
                         break;
                     case Languages.Swift:
                     case Languages.Kotlin:
