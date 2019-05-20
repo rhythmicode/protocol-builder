@@ -129,6 +129,23 @@ namespace ProtocolBuilder.Converters
                             break;
                     }
                     break;
+                case "object":
+                    switch (Builder.Instance.Language)
+                    {
+                        case Languages.Php:
+                            result = "object";
+                            break;
+                        case Languages.TypeScript:
+                            result = "any";
+                            break;
+                        case Languages.Swift:
+                            result = "Any";
+                            break;
+                        case Languages.Kotlin:
+                            result = "Object";
+                            break;
+                    }
+                    break;
             }
             //result = $"{result}{(isNullable ? "?" : "")}";
             return result;
