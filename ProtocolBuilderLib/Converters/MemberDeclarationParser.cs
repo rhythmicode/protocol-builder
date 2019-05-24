@@ -25,6 +25,8 @@ namespace ProtocolBuilder.Converters
 
             foreach (var attribute in attributeLists.SelectMany(attrList => attrList.Attributes))
             {
+                if (attribute.Name.ToString() == nameof(UsingRef))
+                    continue;
                 if (IsProtocolBuilderAttribute(attribute, "ExportAttribute"))
                 {
                     exportAs = SyntaxNode(attribute.ArgumentList.Arguments[0].Expression).Trim().Trim('"');

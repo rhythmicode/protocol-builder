@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolBuilderCli", "Proto
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SampleProject.Protocol", "SampleSetup\Protocol\SampleProject.Protocol.shproj", "{9142BFD8-B57F-488A-8419-452FC3A341C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProject", "SampleSetup\SampleProject\SampleProject.csproj", "{B5C7DB01-9A78-436C-822F-6439B7A5373E}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		SampleSetup\Protocol\SampleProject.Protocol.projitems*{9142bfd8-b57f-488a-8419-452fc3a341c2}*SharedItemsImports = 13
@@ -32,6 +34,10 @@ Global
 		{2A4096B0-0C06-43DD-8C8F-494CEB78B009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A4096B0-0C06-43DD-8C8F-494CEB78B009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A4096B0-0C06-43DD-8C8F-494CEB78B009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5C7DB01-9A78-436C-822F-6439B7A5373E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5C7DB01-9A78-436C-822F-6439B7A5373E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5C7DB01-9A78-436C-822F-6439B7A5373E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5C7DB01-9A78-436C-822F-6439B7A5373E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

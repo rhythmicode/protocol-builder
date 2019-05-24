@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\Protocol\SampleProject.Protocol.projitems" Label="Shared" />
+
+  <Import Project="..\..\ProtocolBuilderShared\ProtocolBuilderShared.projitems" Label="Shared" />
+
+</Project>

@@ -17,6 +17,14 @@ namespace ProtocolBuilderCli
                 "-n",
                 ""
             };
+            //args = new[]
+            //{
+            //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+            //    "-o",
+            //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
+            //    "-l",
+            //    "typescript",
+            //};
 #endif
 
             var builder = new ProtocolBuilder.Builder(args);
