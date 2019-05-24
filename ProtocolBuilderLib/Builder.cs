@@ -309,20 +309,24 @@ namespace ProtocolBuilder
                     break;
                 case Languages.Php:
                     {
+                        var uParsed = ParseUsingsAsRelativePath(root, rootNamespace);
+
                         if (Namespace != null)
                         {
                             var namespacePrefix = string.IsNullOrWhiteSpace(Namespace) ? "" : $"{Namespace}\\";
                             output += $"namespace {namespacePrefix}{rootNamespace.Name.ToString().Replace(".", "\\")};{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
+
                             var imports = ParseUsings(root)
                                 .Where(a => !string.IsNullOrWhiteSpace(a.alias))
                                 .Select(a => $"use {namespacePrefix}{a.ns.Replace(".", "\\")}\\{a.alias};")
                                 .ToList();
+                            imports.AddRange(uParsed.Select(a => $"use {namespacePrefix}{RelativeNamespacePathToAbs(rootNamespace, a.relativePath).Replace(".", "\\")};"));
                             if (imports.Count > 0)
                                 output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                         }
                         else
                         {
-                            foreach (var feUsingParsed in ParseUsingsAsRelativePath(root, rootNamespace))
+                            foreach (var feUsingParsed in uParsed)
                                 output += $"require_once(dirname(__FILE__).'/{ feUsingParsed.relativePath }.php');{BuilderStatic.NewLine}";
                         }
                     }
@@ -372,6 +376,28 @@ namespace ProtocolBuilder
             }
 
             return (saveRelativeDir, output);
+        }
+
+        private static string RelativeNamespacePathToAbs(NamespaceDeclarationSyntax rootNamespace, string relativePath)
+        {
+            var relativePathSegments = relativePath.Split("/").ToList();
+            var rootNsSegments = rootNamespace.Name.ToString().Split(".").ToList();
+            foreach (var relSegment in relativePathSegments)
+            {
+                switch (relSegment)
+                {
+                    case ".":
+                        break;
+                    case "..":
+                        rootNsSegments.RemoveAt(rootNsSegments.Count - 1);
+                        break;
+                    default:
+                        rootNsSegments.Add(relSegment);
+                        break;
+                }
+            }
+
+            return string.Join('.', rootNsSegments);
         }
 
         private static List<(string ns, string alias)> ParseUsings(CompilationUnitSyntax root)
@@ -442,7 +468,43 @@ namespace ProtocolBuilder
 
                 result.Add((relativePath: filePath, name: fe1.Alias.Name.ToString()));
             }
+            result.AddRange(rootNamespace
+                .Members
+                .OfType<ClassDeclarationSyntax>()
+                .SelectMany(c => c.AttributeLists)
+                .SelectMany(a => a.Attributes)
+                .Where(a => a.Name.ToString() == nameof(UsingRef))
+                .Select(
+                    a =>
+                    {
+                        var argName = ParseUsingRefParam(a.ArgumentList.Arguments[0].Expression.ToString());
+                        var relPathSegments = new List<string>();
+                        for (int iArg = 1; iArg < a.ArgumentList.Arguments.Count; iArg++)
+                            relPathSegments.Add(ParseUsingRefParam(a.ArgumentList.Arguments[iArg].Expression.ToString()));
+                        var path = string.Join("/", relPathSegments);
+                        if (string.IsNullOrWhiteSpace(path))
+                            path = ".";
+                        return (path + "/" + argName, argName);
+                    }
+                )
+            );
             return result;
+        }
+
+        private static string ParseUsingRefParam(string source)
+        {
+            var r = source;
+            if (r.StartsWith("\""))
+            {
+                r = r.Trim('"').Trim();
+            }
+            else if (r.StartsWith("nameof"))
+            {
+                r = r.Replace("nameof", "");
+                r = r.Trim('(', ')');
+                r = r.Split('.').Last();
+            }
+            return r;
         }
 
         private string FindSolution(string path, int levels)

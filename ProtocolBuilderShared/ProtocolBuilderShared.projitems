@@ -9,6 +9,7 @@
     <Import_RootNamespace>ProtocolBuilder</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)UsingRef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EnumAsStringAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NullableAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OutputAsAttribute.cs" />
