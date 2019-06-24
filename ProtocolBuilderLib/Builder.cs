@@ -316,13 +316,11 @@ namespace ProtocolBuilder
                             var namespacePrefix = string.IsNullOrWhiteSpace(Namespace) ? "" : $"{Namespace}\\";
                             output += $"namespace {namespacePrefix}{rootNamespace.Name.ToString().Replace(".", "\\")};{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
 
-                            var imports = ParseUsings(root)
+                            Instance.Imports.AddRange(ParseUsings(root)
                                 .Where(a => !string.IsNullOrWhiteSpace(a.alias))
-                                .Select(a => $"use {namespacePrefix}{a.ns.Replace(".", "\\")}\\{a.alias};")
-                                .ToList();
-                            imports.AddRange(uParsed.Select(a => $"use {namespacePrefix}{RelativeNamespacePathToAbs(rootNamespace, a.relativePath).Replace(".", "\\")};"));
-                            if (imports.Count > 0)
-                                output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
+                                .Select(a => (a.alias, $"\\{namespacePrefix}{a.ns.Replace(".", "\\")}\\{a.alias}") as (string, string)?)
+                            );
+                            Instance.Imports.AddRange(uParsed.Select(a => (a.name, $"\\{namespacePrefix}{RelativeNamespacePathToAbs(rootNamespace, a.relativePath).Replace(".", "\\")}") as (string, string)?));
                         }
                         else
                         {
@@ -632,6 +630,8 @@ namespace ProtocolBuilder
         public List<string> ClassConstructorLines { get; set; } = new List<string>();
 
         public Dictionary<string, string> EnumMapToNames { get; set; } = new Dictionary<string, string>();
+
+        public List<(string typeName, string fullPath)?> Imports = new List<(string typeName, string fullPath)?>();
 
         public string LanguageDeclaration(
             bool isEnum,

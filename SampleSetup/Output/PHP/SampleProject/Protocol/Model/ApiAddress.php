@@ -1,17 +1,14 @@
 <?php
 namespace SampleProject\Protocol\Model;
 
-use SampleProject\Protocol\Model\AbstractModelWithId;
-use SampleProject\Protocol\Model\ApiCountry;
-use SampleProject\Protocol\Model\ApiCity;
-class ApiAddress extends AbstractModelWithId {
+class ApiAddress extends \SampleProject\Protocol\Model\AbstractModelWithId {
     /** @var string */ public $CountryId;
 
-    /** @var ApiCountry */ public $Country;
+    /** @var \SampleProject\Protocol\Model\ApiCountry */ public $Country;
 
     /** @var string */ public $CityId;
 
-    /** @var ApiCity */ public $City;
+    /** @var \SampleProject\Protocol\Model\ApiCity */ public $City;
 
     /** @var string */ public $PostalCode;
 

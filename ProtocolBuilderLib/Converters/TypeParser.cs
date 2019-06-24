@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ProtocolBuilder.Converters
@@ -16,6 +17,12 @@ namespace ProtocolBuilder.Converters
         private static string Type(string typeName, bool implyUnwrapped = false)//, bool isNullable = false)
         {
             var result = typeName;
+            if (Builder.Instance.Language == Languages.Php)
+            {
+                var typeAsImport = Builder.Instance.Imports.FirstOrDefault(a => a?.typeName == typeName);
+                if (typeAsImport != null)
+                    return typeAsImport?.fullPath;
+            }
             switch (result)
             {
                 case "DateTime":
