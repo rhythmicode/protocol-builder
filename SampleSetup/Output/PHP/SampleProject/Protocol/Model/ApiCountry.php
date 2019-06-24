@@ -1,10 +1,7 @@
 <?php
 namespace SampleProject\Protocol\Model;
 
-use SampleProject\Protocol\Model\AbstractModelWithId;
-use SampleProject\Protocol\Model\ApiCity;
-use SampleProject\Protocol\Model\ApiAddress;
-class ApiCountry extends AbstractModelWithId {
+class ApiCountry extends \SampleProject\Protocol\Model\AbstractModelWithId {
     /** @var string */ public $TitleShort;
 
     /** @var string */ public $TitleLong;
@@ -13,9 +10,9 @@ class ApiCountry extends AbstractModelWithId {
 
     /** @var string */ public $Code;
 
-    /** @var ApiCity[] */ public $Cities;
+    /** @var \SampleProject\Protocol\Model\ApiCity[] */ public $Cities;
 
-    /** @var ApiAddress[] */ public $Addresses;
+    /** @var \SampleProject\Protocol\Model\ApiAddress[] */ public $Addresses;
 
     public function __construct()
     {
