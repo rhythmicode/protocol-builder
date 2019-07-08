@@ -16,6 +16,7 @@ class ApiCountry extends \SampleProject\Protocol\Model\AbstractModelWithId {
 
     public function __construct()
     {
+        parent::__construct();
         $this->Cities = [];
         $this->Addresses = [];
     }

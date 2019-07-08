@@ -10,6 +10,7 @@ class ApiUserRegisterReturn extends \SampleProject\Protocol\Body\AbstractReturn 
 
     public function __construct()
     {
+        parent::__construct();
         $this->UserCurrencyTypeEnumId = \SampleProject\Protocol\Context\CurrencyTypes::EUR;
     }
 }
