@@ -869,7 +869,7 @@ namespace ProtocolBuilder
             }
         }
 
-        public string LanguageConvertClassConstructor()
+        public string LanguageConvertClassConstructor(bool isClassExtended)
         {
             var result = "";
             if (ClassConstructorLines.Count > 0)
@@ -877,9 +877,10 @@ namespace ProtocolBuilder
                 switch (Language)
                 {
                     case Languages.Php:
+                        var parentLine = $"\n{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}parent::__construct();";
                         result = $@"
 {BuilderStatic.Indent}{BuilderStatic.Indent}public function __construct()
-{BuilderStatic.Indent}{BuilderStatic.Indent}{{
+{BuilderStatic.Indent}{BuilderStatic.Indent}{{{(isClassExtended ? parentLine : "")}
 {string.Join(BuilderStatic.NewLine, ClassConstructorLines.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a};"))}
 {BuilderStatic.Indent}{BuilderStatic.Indent}}}
 ";

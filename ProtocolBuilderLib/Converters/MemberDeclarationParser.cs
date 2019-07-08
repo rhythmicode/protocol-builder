@@ -169,7 +169,7 @@ namespace ProtocolBuilder.Converters
             }
 
             var outputMembers = declaration.Members.ConvertSyntaxList();
-            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor();
+            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor(declaration.BaseList != null);
             var outputEnumMapToName = "";
             if (isEnum)
                 outputEnumMapToName = Builder.Instance.LanguageConvertEnumMapToName();
