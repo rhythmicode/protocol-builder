@@ -331,12 +331,22 @@ namespace ProtocolBuilder
                     break;
             }
 
-            if (rootNamespace.Members.OfType<EnumDeclarationSyntax>().Count() > 0)
+            if (rootNamespace.Members.OfType<EnumDeclarationSyntax>().Any())
             {
                 // Parses each enum in the file into output.
                 output = rootNamespace
                     .Members
                     .OfType<EnumDeclarationSyntax>()
+                    .Aggregate(output, (current, childType) =>
+                        current + Indenter.FixIndent(BuilderStatic.SyntaxNode(childType))
+                    );
+            }
+            else if (rootNamespace.Members.OfType<InterfaceDeclarationSyntax>().Any())
+            {
+                // Parses each enum in the file into output.
+                output = rootNamespace
+                    .Members
+                    .OfType<InterfaceDeclarationSyntax>()
                     .Aggregate(output, (current, childType) =>
                         current + Indenter.FixIndent(BuilderStatic.SyntaxNode(childType))
                     );
@@ -534,7 +544,7 @@ namespace ProtocolBuilder
             //    return false;
             //}
 
-            OutputPath = OutputPath ?? InputPath.Substring(0, (InputPath.Length - ".cs".Length)) + LanguageFileExtension();
+            OutputPath = OutputPath ?? InputPath.Substring(0, InputPath.Length - ".cs".Length) + LanguageFileExtension();
 
             return true; // OutputPath.EndsWith(LanguageFileExtension());
         }
@@ -558,6 +568,23 @@ namespace ProtocolBuilder
                     break;
             }
             return r;
+        }
+
+        public string LanguageConvertInterface()
+        {
+            switch (Language)
+            {
+                case Languages.Swift:
+                    return "protocol ";
+                case Languages.Kotlin:
+                    return "interface ";
+                case Languages.TypeScript:
+                    return "interface ";
+                case Languages.Php:
+                    return "interface ";
+                default:
+                    throw new ArgumentException();
+            }
         }
 
         public string LanguageConvertClass(bool isStatic)
@@ -621,7 +648,7 @@ namespace ProtocolBuilder
                     return $"(val rawValue: {type})";
                 case Languages.Php:
                 case Languages.TypeScript:
-                    return $"";
+                    return "";
                 default:
                     throw new ArgumentException();
             }

@@ -48,7 +48,7 @@ namespace ProtocolBuilder.Converters
             {
                 case "Action":
                     //Action<string, int> converts to (String, Int) -> Void
-                    return ": (" + SyntaxNode(name.TypeArgumentList) + ") -> Void";
+                    return ": (" + SyntaxNode(name.TypeArgumentList) + ")";
                 case "Func":
                     //Func<string, int, string> converts to (String, Int) -> String
                     var output = ": (";
