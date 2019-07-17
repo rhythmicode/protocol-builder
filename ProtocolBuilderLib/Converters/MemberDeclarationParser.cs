@@ -184,6 +184,85 @@ namespace ProtocolBuilder.Converters
         }
 
         /// <summary>
+        /// Converts a class declaration to Swift
+        /// </summary>
+        /// <example>public class SomeClass { }</example>
+        /// <param name="declaration">The class to convert</param>
+        /// <returns>The converted Swift class</returns>
+        [ParsesType(typeof(InterfaceDeclarationSyntax))]
+        public static string InterfaceDeclaration(InterfaceDeclarationSyntax declaration)
+        {
+            Builder.Instance.EnumMapToNames.Clear();
+            Builder.Instance.ClassConstructorLines.Clear();
+            var parsedAttributes =
+                ParseAttributes(declaration.AttributeLists, NewLine + declaration.GetLeadingTrivia().ToFullString());
+            var nameToUse = parsedAttributes.Item2;
+
+            var output = declaration.GetLeadingTrivia().ToFullString();
+            
+            output += parsedAttributes.Item1;
+            output +=
+                Builder.Instance.LanguageConvertInterface()
+                + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd());
+
+
+            //parse the base type, if there is one
+            if (declaration.BaseList != null)
+            {
+                var baseType = declaration.BaseList.Types.OfType<IdentifierNameSyntax>().FirstOrDefault();
+                var typeGeneric = declaration.BaseList.Types.OfType<SimpleBaseTypeSyntax>().FirstOrDefault();
+
+                switch (Builder.Instance.Language)
+                {
+                    case Languages.Swift:
+                        if (baseType != null)
+                            output += ", " + SyntaxNode(baseType);
+                        else if (typeGeneric != null)
+                            output += ", " + SyntaxNode(typeGeneric);
+                        else
+                            output += ", " + declaration.BaseList.ToString().Trim(' ', ':');
+                        break;
+                    case Languages.Kotlin:
+                        if (baseType != null)
+                            output += $": {SyntaxNode(baseType).TrimEnd()}()";
+                        else if (typeGeneric != null)
+                            output += $": {SyntaxNode(typeGeneric).TrimEnd()}()";
+                        else
+                            output += $": {declaration.BaseList.ToString().Trim(' ', ':')}()";
+                        break;
+                    case Languages.TypeScript:
+                        if (baseType != null)
+                            output += $" extends {SyntaxNode(baseType).TrimEnd()}";
+                        else if (typeGeneric != null)
+                            output += $" extends {SyntaxNode(typeGeneric).TrimEnd()}";
+                        else
+                            output += $" extends {declaration.BaseList.ToString().Trim(' ', ':')}";
+                        break;
+                    case Languages.Php:
+                        if (baseType != null)
+                            output += $" extends {SyntaxNode(baseType).TrimEnd()}";
+                        else if (typeGeneric != null)
+                            output += $" extends {SyntaxNode(typeGeneric).TrimEnd()}";
+                        else
+                            output += $" extends {declaration.BaseList.ToString().Trim(' ', ':')}";
+                        break;
+                }
+            }
+
+            var outputMembers = declaration.Members.ConvertSyntaxList();
+            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor(declaration.BaseList != null);
+            var outputEnumMapToName = "";
+            output +=
+                " "
+                + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
+                + outputMembers
+                + outputConstructor
+                + outputEnumMapToName
+                + SyntaxTokenConvert(declaration.CloseBraceToken);
+            return output;
+        }
+
+        /// <summary>
         /// Converts a method to Swift
         /// </summary>
         /// <example>public void Something() { }</example>
@@ -210,7 +289,7 @@ namespace ProtocolBuilder.Converters
                     break;
             }
 
-            output += (nameToUse ?? SyntaxTokenConvert(method.Identifier));
+            output += nameToUse ?? SyntaxTokenConvert(method.Identifier);
 
             if (method.TypeParameterList != null) //public string Something<T>
             {
@@ -240,15 +319,16 @@ namespace ProtocolBuilder.Converters
                 switch (Builder.Instance.Language)
                 {
                     case Languages.Kotlin:
-                        output += ": ";
+                        output += ": " + returnTypeResult;
                         break;
                     case Languages.Swift:
+                        if (returnTypeResult != "Void")
+                            output += " -> " + returnTypeResult;
+                        break;
                     default:
-                        output += " -> ";
+                        output += " -> " + returnTypeResult;
                         break;
                 }
-
-                output += returnTypeResult;
             }
 
             output +=
