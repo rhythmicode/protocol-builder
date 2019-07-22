@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -36,7 +36,7 @@ namespace ProtocolBuilder.Converters
                 var attOutput = default(string);
                 if (attribute.Name.ToString().ToLower().Contains("outputas"))
                 {
-                    var attLanguage = (Languages)Enum.Parse(typeof(Languages),
+                    var attLanguage = (Languages) Enum.Parse(typeof(Languages),
                         attribute.ArgumentList.Arguments[0].Expression.ToString().Split('.').Last());
                     if (attLanguage == Builder.Instance.Language)
                         attOutput = attribute.ArgumentList.Arguments[1].Expression.ToString().Trim('"');
@@ -91,13 +91,13 @@ namespace ProtocolBuilder.Converters
         }
 
         /// <summary>
-        /// Converts a class declaration to Swift
+        /// Parses TypeDeclarationSyntax into Class, Enum or Interface/Protocol(Swift)
+        /// NOTE that internal will be converted to public, as Swift doesn't have an internal modifier
         /// </summary>
-        /// <example>public class SomeClass { }</example>
-        /// <param name="declaration">The class to convert</param>
-        /// <returns>The converted Swift class</returns>
-        [ParsesType(typeof(ClassDeclarationSyntax))]
-        public static string ClassDeclaration(ClassDeclarationSyntax declaration)
+        /// <example>ParseClassOrInterface(declaration)</example>
+        /// <param name="declaration">The original TypeDeclarationSyntax</param>
+        /// <returns>The parsed Class, Enum or Interface/Protocol(Swift)</returns>
+        private static string ParseClassOrInterface(TypeDeclarationSyntax declaration)
         {
             Builder.Instance.EnumMapToNames.Clear();
             Builder.Instance.ClassConstructorLines.Clear();
@@ -106,8 +106,9 @@ namespace ProtocolBuilder.Converters
             var nameToUse = parsedAttributes.Item2;
 
             var output = declaration.GetLeadingTrivia().ToFullString();
-            var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static") == true;
+            var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static");
             var isEnum = declaration.IsInsideEnum();
+            var isInterface = declaration.IsInsideInterface();
             if (isEnum)
             {
                 output +=
@@ -116,8 +117,18 @@ namespace ProtocolBuilder.Converters
                     + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd())
                     + Builder.Instance.LanguageConvertEnumPostfix("String");
             }
+            else if (isInterface)
+            {
+                output += parsedAttributes.Item1;
+                output +=
+                    Builder.Instance.LanguageConvertInterface()
+                    + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd());
+            }
             else
             {
+                if (!(declaration is ClassDeclarationSyntax))
+                    throw new ArgumentException(
+                        "Method ParseClassOrInterface() accepts only InterfaceDeclarationSyntax or ClassDeclarationSyntax");
                 output += parsedAttributes.Item1;
                 output +=
                     Builder.Instance.LanguageConvertClass(isStatic)
@@ -189,77 +200,22 @@ namespace ProtocolBuilder.Converters
         /// <example>public class SomeClass { }</example>
         /// <param name="declaration">The class to convert</param>
         /// <returns>The converted Swift class</returns>
+        [ParsesType(typeof(ClassDeclarationSyntax))]
+        public static string ClassDeclaration(ClassDeclarationSyntax declaration)
+        {
+            return ParseClassOrInterface(declaration);
+        }
+
+        /// <summary>
+        /// Converts a interface declaration to any supported language
+        /// </summary>
+        /// <example>InterfaceDeclaration(interfaceDeclaration)</example>
+        /// <param name="declaration">The interface to convert</param>
+        /// <returns>The converted interface</returns>
         [ParsesType(typeof(InterfaceDeclarationSyntax))]
         public static string InterfaceDeclaration(InterfaceDeclarationSyntax declaration)
         {
-            Builder.Instance.EnumMapToNames.Clear();
-            Builder.Instance.ClassConstructorLines.Clear();
-            var parsedAttributes =
-                ParseAttributes(declaration.AttributeLists, NewLine + declaration.GetLeadingTrivia().ToFullString());
-            var nameToUse = parsedAttributes.Item2;
-
-            var output = declaration.GetLeadingTrivia().ToFullString();
-            
-            output += parsedAttributes.Item1;
-            output +=
-                Builder.Instance.LanguageConvertInterface()
-                + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd());
-
-
-            //parse the base type, if there is one
-            if (declaration.BaseList != null)
-            {
-                var baseType = declaration.BaseList.Types.OfType<IdentifierNameSyntax>().FirstOrDefault();
-                var typeGeneric = declaration.BaseList.Types.OfType<SimpleBaseTypeSyntax>().FirstOrDefault();
-
-                switch (Builder.Instance.Language)
-                {
-                    case Languages.Swift:
-                        if (baseType != null)
-                            output += ", " + SyntaxNode(baseType);
-                        else if (typeGeneric != null)
-                            output += ", " + SyntaxNode(typeGeneric);
-                        else
-                            output += ", " + declaration.BaseList.ToString().Trim(' ', ':');
-                        break;
-                    case Languages.Kotlin:
-                        if (baseType != null)
-                            output += $": {SyntaxNode(baseType).TrimEnd()}()";
-                        else if (typeGeneric != null)
-                            output += $": {SyntaxNode(typeGeneric).TrimEnd()}()";
-                        else
-                            output += $": {declaration.BaseList.ToString().Trim(' ', ':')}()";
-                        break;
-                    case Languages.TypeScript:
-                        if (baseType != null)
-                            output += $" extends {SyntaxNode(baseType).TrimEnd()}";
-                        else if (typeGeneric != null)
-                            output += $" extends {SyntaxNode(typeGeneric).TrimEnd()}";
-                        else
-                            output += $" extends {declaration.BaseList.ToString().Trim(' ', ':')}";
-                        break;
-                    case Languages.Php:
-                        if (baseType != null)
-                            output += $" extends {SyntaxNode(baseType).TrimEnd()}";
-                        else if (typeGeneric != null)
-                            output += $" extends {SyntaxNode(typeGeneric).TrimEnd()}";
-                        else
-                            output += $" extends {declaration.BaseList.ToString().Trim(' ', ':')}";
-                        break;
-                }
-            }
-
-            var outputMembers = declaration.Members.ConvertSyntaxList();
-            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor(declaration.BaseList != null);
-            var outputEnumMapToName = "";
-            output +=
-                " "
-                + SyntaxTokenConvert(declaration.OpenBraceToken).TrimStart()
-                + outputMembers
-                + outputConstructor
-                + outputEnumMapToName
-                + SyntaxTokenConvert(declaration.CloseBraceToken);
-            return output;
+            return ParseClassOrInterface(declaration);
         }
 
         /// <summary>
@@ -357,6 +313,7 @@ namespace ProtocolBuilder.Converters
                     {
                         output += SyntaxNode(declaration.EqualsValue);
                     }
+
                     break;
                 case Languages.Kotlin:
                     output = SyntaxTokenConvert(declaration.Identifier).TrimEnd();
@@ -364,6 +321,7 @@ namespace ProtocolBuilder.Converters
                     {
                         output += $"({SyntaxNode(declaration.EqualsValue.Value)})";
                     }
+
                     break;
                 case Languages.TypeScript:
                     output = SyntaxTokenConvert(declaration.Identifier).TrimEnd();
@@ -371,6 +329,7 @@ namespace ProtocolBuilder.Converters
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value)}";
                     }
+
                     break;
                 case Languages.Php:
                     output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
@@ -378,8 +337,10 @@ namespace ProtocolBuilder.Converters
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value).TrimEnd()};";
                     }
+
                     break;
             }
+
             if (declaration.EqualsValue != null)
                 Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(), SyntaxTokenConvert(declaration.Identifier).Trim());
 

@@ -14,6 +14,7 @@ namespace ProtocolBuilder
         {
             return node.Parent?.IsInsideEnum() == true;
         }
+
         public static bool IsInsideEnum(this SyntaxNode node)
         {
             if (node == null) return false;
@@ -30,6 +31,19 @@ namespace ProtocolBuilder
             else
             {
                 return IsInsideEnum(node.Parent);
+            }
+        }
+
+        public static bool IsInsideInterface(this SyntaxNode node)
+        {
+            switch (node)
+            {
+                case null:
+                    return false;
+                case InterfaceDeclarationSyntax _:
+                    return true;
+                default:
+                    return IsInsideInterface(node.Parent);
             }
         }
 

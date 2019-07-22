@@ -343,7 +343,7 @@ namespace ProtocolBuilder
             }
             else if (rootNamespace.Members.OfType<InterfaceDeclarationSyntax>().Any())
             {
-                // Parses each enum in the file into output.
+                // Parses each interface in the file into output.
                 output = rootNamespace
                     .Members
                     .OfType<InterfaceDeclarationSyntax>()
