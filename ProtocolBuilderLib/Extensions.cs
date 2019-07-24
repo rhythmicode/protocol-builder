@@ -33,20 +33,7 @@ namespace ProtocolBuilder
                 return IsInsideEnum(node.Parent);
             }
         }
-
-        public static bool IsInsideInterface(this SyntaxNode node)
-        {
-            switch (node)
-            {
-                case null:
-                    return false;
-                case InterfaceDeclarationSyntax _:
-                    return true;
-                default:
-                    return IsInsideInterface(node.Parent);
-            }
-        }
-
+        
         public static bool IsTypeList(this TypeSyntax source)
         {
             return (source as GenericNameSyntax)?.Identifier.Text?.ToLower() == "list";

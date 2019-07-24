@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -96,8 +96,9 @@ namespace ProtocolBuilder.Converters
         /// </summary>
         /// <example>ParseClassOrInterface(declaration)</example>
         /// <param name="declaration">The original TypeDeclarationSyntax</param>
+        /// <param name="isInterface">Do we parse interface or class/enum?</param>
         /// <returns>The parsed Class, Enum or Interface/Protocol(Swift)</returns>
-        private static string ParseClassOrInterface(TypeDeclarationSyntax declaration)
+        private static string ParseClassOrInterface(TypeDeclarationSyntax declaration, bool isInterface)
         {
             Builder.Instance.EnumMapToNames.Clear();
             Builder.Instance.ClassConstructorLines.Clear();
@@ -108,7 +109,6 @@ namespace ProtocolBuilder.Converters
             var output = declaration.GetLeadingTrivia().ToFullString();
             var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static");
             var isEnum = declaration.IsInsideEnum();
-            var isInterface = declaration.IsInsideInterface();
             if (isEnum)
             {
                 output +=
@@ -203,7 +203,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(ClassDeclarationSyntax))]
         public static string ClassDeclaration(ClassDeclarationSyntax declaration)
         {
-            return ParseClassOrInterface(declaration);
+            return ParseClassOrInterface(declaration, false);
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(InterfaceDeclarationSyntax))]
         public static string InterfaceDeclaration(InterfaceDeclarationSyntax declaration)
         {
-            return ParseClassOrInterface(declaration);
+            return ParseClassOrInterface(declaration, true);
         }
 
         /// <summary>
@@ -332,7 +332,8 @@ namespace ProtocolBuilder.Converters
 
                     break;
                 case Languages.Php:
-                    output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
+                    output =
+                        $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
                     if (declaration.EqualsValue != null)
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value).TrimEnd()};";
@@ -342,7 +343,8 @@ namespace ProtocolBuilder.Converters
             }
 
             if (declaration.EqualsValue != null)
-                Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(), SyntaxTokenConvert(declaration.Identifier).Trim());
+                Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(),
+                    SyntaxTokenConvert(declaration.Identifier).Trim());
 
             return output;
         }
@@ -448,7 +450,9 @@ namespace ProtocolBuilder.Converters
 
             return declaration.ConvertTo(
                 output +
-                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false, declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer, declaration.SemicolonToken)
+                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false,
+                    declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer,
+                    declaration.SemicolonToken)
             );
         }
 
