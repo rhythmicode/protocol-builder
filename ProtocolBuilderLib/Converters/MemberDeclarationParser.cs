@@ -36,7 +36,7 @@ namespace ProtocolBuilder.Converters
                 var attOutput = default(string);
                 if (attribute.Name.ToString().ToLower().Contains("outputas"))
                 {
-                    var attLanguage = (Languages)Enum.Parse(typeof(Languages),
+                    var attLanguage = (Languages) Enum.Parse(typeof(Languages),
                         attribute.ArgumentList.Arguments[0].Expression.ToString().Split('.').Last());
                     if (attLanguage == Builder.Instance.Language)
                         attOutput = attribute.ArgumentList.Arguments[1].Expression.ToString().Trim('"');
@@ -91,13 +91,14 @@ namespace ProtocolBuilder.Converters
         }
 
         /// <summary>
-        /// Converts a class declaration to Swift
+        /// Parses TypeDeclarationSyntax into Class, Enum or Interface/Protocol(Swift)
+        /// NOTE that internal will be converted to public, as Swift doesn't have an internal modifier
         /// </summary>
-        /// <example>public class SomeClass { }</example>
-        /// <param name="declaration">The class to convert</param>
-        /// <returns>The converted Swift class</returns>
-        [ParsesType(typeof(ClassDeclarationSyntax))]
-        public static string ClassDeclaration(ClassDeclarationSyntax declaration)
+        /// <example>ParseClassOrInterface(declaration)</example>
+        /// <param name="declaration">The original TypeDeclarationSyntax</param>
+        /// <param name="isInterface">Do we parse interface or class/enum?</param>
+        /// <returns>The parsed Class, Enum or Interface/Protocol(Swift)</returns>
+        private static string ParseClassOrInterface(TypeDeclarationSyntax declaration, bool isInterface)
         {
             Builder.Instance.EnumMapToNames.Clear();
             Builder.Instance.ClassConstructorLines.Clear();
@@ -106,7 +107,7 @@ namespace ProtocolBuilder.Converters
             var nameToUse = parsedAttributes.Item2;
 
             var output = declaration.GetLeadingTrivia().ToFullString();
-            var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static") == true;
+            var isStatic = declaration.Modifiers.Any(a1 => a1.Text.ToLower() == "static");
             var isEnum = declaration.IsInsideEnum();
             if (isEnum)
             {
@@ -116,8 +117,18 @@ namespace ProtocolBuilder.Converters
                     + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd())
                     + Builder.Instance.LanguageConvertEnumPostfix("String");
             }
+            else if (isInterface)
+            {
+                output += parsedAttributes.Item1;
+                output +=
+                    Builder.Instance.LanguageConvertInterface()
+                    + (nameToUse ?? SyntaxTokenConvert(declaration.Identifier).TrimEnd());
+            }
             else
             {
+                if (!(declaration is ClassDeclarationSyntax))
+                    throw new ArgumentException(
+                        "Method ParseClassOrInterface() accepts only InterfaceDeclarationSyntax or ClassDeclarationSyntax");
                 output += parsedAttributes.Item1;
                 output +=
                     Builder.Instance.LanguageConvertClass(isStatic)
@@ -184,6 +195,30 @@ namespace ProtocolBuilder.Converters
         }
 
         /// <summary>
+        /// Converts a class declaration to Swift
+        /// </summary>
+        /// <example>public class SomeClass { }</example>
+        /// <param name="declaration">The class to convert</param>
+        /// <returns>The converted Swift class</returns>
+        [ParsesType(typeof(ClassDeclarationSyntax))]
+        public static string ClassDeclaration(ClassDeclarationSyntax declaration)
+        {
+            return ParseClassOrInterface(declaration, false);
+        }
+
+        /// <summary>
+        /// Converts a interface declaration to any supported language
+        /// </summary>
+        /// <example>InterfaceDeclaration(interfaceDeclaration)</example>
+        /// <param name="declaration">The interface to convert</param>
+        /// <returns>The converted interface</returns>
+        [ParsesType(typeof(InterfaceDeclarationSyntax))]
+        public static string InterfaceDeclaration(InterfaceDeclarationSyntax declaration)
+        {
+            return ParseClassOrInterface(declaration, true);
+        }
+
+        /// <summary>
         /// Converts a method to Swift
         /// </summary>
         /// <example>public void Something() { }</example>
@@ -210,7 +245,7 @@ namespace ProtocolBuilder.Converters
                     break;
             }
 
-            output += (nameToUse ?? SyntaxTokenConvert(method.Identifier));
+            output += nameToUse ?? SyntaxTokenConvert(method.Identifier);
 
             if (method.TypeParameterList != null) //public string Something<T>
             {
@@ -240,15 +275,16 @@ namespace ProtocolBuilder.Converters
                 switch (Builder.Instance.Language)
                 {
                     case Languages.Kotlin:
-                        output += ": ";
+                        output += ": " + returnTypeResult;
                         break;
                     case Languages.Swift:
+                        if (returnTypeResult != "Void")
+                            output += " -> " + returnTypeResult;
+                        break;
                     default:
-                        output += " -> ";
+                        output += " -> " + returnTypeResult;
                         break;
                 }
-
-                output += returnTypeResult;
             }
 
             output +=
@@ -277,6 +313,7 @@ namespace ProtocolBuilder.Converters
                     {
                         output += SyntaxNode(declaration.EqualsValue);
                     }
+
                     break;
                 case Languages.Kotlin:
                     output = SyntaxTokenConvert(declaration.Identifier).TrimEnd();
@@ -284,6 +321,7 @@ namespace ProtocolBuilder.Converters
                     {
                         output += $"({SyntaxNode(declaration.EqualsValue.Value)})";
                     }
+
                     break;
                 case Languages.TypeScript:
                     output = SyntaxTokenConvert(declaration.Identifier).TrimEnd();
@@ -291,17 +329,22 @@ namespace ProtocolBuilder.Converters
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value)}";
                     }
+
                     break;
                 case Languages.Php:
-                    output = $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
+                    output =
+                        $"{declaration.Identifier.LeadingTrivia.ToFullString()}const {declaration.Identifier.ToString().TrimEnd()}";
                     if (declaration.EqualsValue != null)
                     {
                         output += $" = {SyntaxNode(declaration.EqualsValue.Value).TrimEnd()};";
                     }
+
                     break;
             }
+
             if (declaration.EqualsValue != null)
-                Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(), SyntaxTokenConvert(declaration.Identifier).Trim());
+                Builder.Instance.EnumMapToNames.Add(SyntaxNode(declaration.EqualsValue.Value).Trim(),
+                    SyntaxTokenConvert(declaration.Identifier).Trim());
 
             return output;
         }
@@ -407,7 +450,9 @@ namespace ProtocolBuilder.Converters
 
             return declaration.ConvertTo(
                 output +
-                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false, declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer, declaration.SemicolonToken)
+                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false,
+                    declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer,
+                    declaration.SemicolonToken)
             );
         }
 

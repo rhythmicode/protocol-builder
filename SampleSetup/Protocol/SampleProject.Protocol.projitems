@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Context\Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\CurrencyTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\Languages.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interface\Interface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\AbstractModelWithId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\ApiAddress.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\ApiCity.cs" />

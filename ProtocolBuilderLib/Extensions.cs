@@ -14,6 +14,7 @@ namespace ProtocolBuilder
         {
             return node.Parent?.IsInsideEnum() == true;
         }
+
         public static bool IsInsideEnum(this SyntaxNode node)
         {
             if (node == null) return false;
@@ -32,7 +33,7 @@ namespace ProtocolBuilder
                 return IsInsideEnum(node.Parent);
             }
         }
-
+        
         public static bool IsTypeList(this TypeSyntax source)
         {
             return (source as GenericNameSyntax)?.Identifier.Text?.ToLower() == "list";
