@@ -7,24 +7,27 @@ namespace ProtocolBuilderCli
         static void Main(string[] args)
         {
 #if DEBUG
-            args = new[]
+            if (args.Length <= 0)
             {
-                System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                "-o",
-                System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\PHP\"),
-                "-l",
-                "php",
-                "-n",
-                ""
-            };
-            //args = new[]
-            //{
-            //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-            //    "-o",
-            //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
-            //    "-l",
-            //    "typescript",
-            //};
+                args = new[]
+                {
+                    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+                    "-o",
+                    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\PHP\"),
+                    "-l",
+                    "php",
+                    "-n",
+                    ""
+                };
+                //args = new[]
+                //{
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+                //    "-o",
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
+                //    "-l",
+                //    "typescript",
+                //};
+            }
 #endif
 
             var builder = new ProtocolBuilder.Builder(args);
@@ -33,6 +36,7 @@ namespace ProtocolBuilderCli
                 Console.WriteLine("Sorry, there was a fatal error with your arguments");
                 return;
             }
+
             builder.Process();
         }
     }
