@@ -1,6 +1,6 @@
 cd "$(dirname "$0")"
 
-dotnet ./Tools/ProtocolBuilder/pbuilder.dll ./Protocol/ -o ./Output/Swift/ -l swift
-dotnet ./Tools/ProtocolBuilder/pbuilder.dll ./Protocol/ -o ./Output/Kotlin/ -l kotlin
-dotnet ./Tools/ProtocolBuilder/pbuilder.dll ./Protocol/ -o ./Output/TypeScript/ -l typescript
-dotnet ./Tools/ProtocolBuilder/pbuilder.dll ./Protocol/ -o ./Output/PHP/ -l php -n ""
+./Tools/protocol-builder ./Protocol/ -o ./Output/Swift/ -l swift
+./Tools/protocol-builder ./Protocol/ -o ./Output/Kotlin/ -l kotlin
+./Tools/protocol-builder ./Protocol/ -o ./Output/TypeScript/ -l typescript
+./Tools/protocol-builder ./Protocol/ -o ./Output/PHP/ -l php -n ""
