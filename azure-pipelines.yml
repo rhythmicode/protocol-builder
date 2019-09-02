@@ -1,5 +1,7 @@
 trigger:
-- releases/*
+  branches:
+    include:
+    - refs/tags/v*
 
 pool:
   vmImage: 'ubuntu-latest'
