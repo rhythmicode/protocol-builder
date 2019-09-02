@@ -11,6 +11,6 @@ steps:
 - task: GitHubRelease@0
   displayName: 'Create GitHub Release'   
   inputs:
-    gitHubConnection: rhythmicode
-    repositoryName: rhythmicode/protocol-builder           
+    gitHubConnection: rhythmicode_oauth
+    repositoryName: rhythmicode_oauth/protocol-builder           
     assets: $(Build.ArtifactStagingDirectory)/tmp/protocol-builder*
