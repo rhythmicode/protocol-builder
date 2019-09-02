@@ -8,9 +8,7 @@ steps:
 - script: sh BuildExecutables.sh
   displayName: 'Build and create executable'
 
-- task: GitHubRelease@0
-  displayName: 'Create GitHub Release'   
+- task: PublishBuildArtifacts@1
   inputs:
-    gitHubConnection: rhythmicode_oauth
-    repositoryName: rhythmicode_oauth/protocol-builder           
-    assets: $(Build.ArtifactStagingDirectory)/tmp/protocol-builder*
+    PathtoPublish: $(Build.ArtifactStagingDirectory)/tmp/protocol-builder*
+    ArtifactName: binaries
