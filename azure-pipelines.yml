@@ -5,14 +5,18 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: |
-    sh BuildExecutables.sh
-    mkdir -p tmp/out
-    mv tmp/protocol-builder* tmp/out
-  displayName: 'Build and create executable'
+- script: sh BuildExecutables.sh
+  displayName: 'Build and create executables'
+
+- task: CopyFiles@2
+  displayName: 'Copy executables to staging directory'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/tmp'
+    Contents: 'protocol-builder*'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'  
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
   inputs:
-    PathtoPublish: $(Build.ArtifactStagingDirectory)/tmp/out
-    ArtifactName: binaries
+    PathtoPublish: $(Build.ArtifactStagingDirectory)
+    ArtifactName: executables
