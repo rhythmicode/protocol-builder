@@ -7,11 +7,12 @@ pool:
 steps:
 - script: |
     sh BuildExecutables.sh
-    mkdir -p /tmp/out
-    mv /tmp/protocol-builder* /tmp/out
+    mkdir -p tmp/out
+    mv tmp/protocol-builder* tmp/out
   displayName: 'Build and create executable'
 
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
   inputs:
     PathtoPublish: $(Build.ArtifactStagingDirectory)/tmp/out
     ArtifactName: binaries
