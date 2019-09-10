@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  protocol-builder:
+    image: 'rhythmicode/protocol-builder:test-1.0.0'
+    volumes:
+      - ./Protocol:/source
+      - ./Output:/output
+      - ./docker-script.sh:/docker-script.sh
+    entrypoint: sh /docker-script.sh
