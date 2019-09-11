@@ -19,7 +19,7 @@ steps:
   displayName: 'Extract git tag'
 
 - task: Docker@2
-  displayName: buildAndPush
+  displayName: 'Docker Build & Push'
   inputs:
     containerRegistry: 'rhythmicode_docker_hub'
     repository: 'rhythmicode/protocol-builder'
