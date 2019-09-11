@@ -15,7 +15,7 @@ steps:
      $gitTag = $gitTags[$gitTags.Count - 1]
    }
    Write-Host "##vso[task.setvariable variable=gitTag]$gitTag"
-   
+   echo "Git Tag: $gitTag"
   displayName: 'Extract git tag'
 
 - task: Docker@2
