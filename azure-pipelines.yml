@@ -8,7 +8,12 @@ pool:
 
 steps:
 - powershell: |
-   $gitTag = "$(Build.SourceBranch)" -replace '(.*)/tags/(.+)', '$2'
+   if ("$(Build.SourceBranch)" -match '(.*)/tags/(.+)') {
+     $gitTag = "$(Build.SourceBranch)" -replace '(.*)/tags/(.+)', '$2'
+   } else {
+     $gitTags = git tag -l v*
+     $gitTag = $gitTags[$gitTags.Count - 1]
+   }
    Write-Host "##vso[task.setvariable variable=gitTag]$gitTag"
    
   displayName: 'Extract git tag'
