@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  protocol-builder:
+    image: 'rhythmicode/protocol-builder:latest'
+    volumes:
+      - ./Protocol:/source
+      - ./Output:/output
+      - ./docker-generate-all.sh:/docker-generate-all.sh
+    entrypoint: sh /docker-generate-all.sh

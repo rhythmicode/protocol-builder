@@ -3,4 +3,4 @@
 .\tmp\tools\protocol-builder .\Protocol\ -o .\Output\TypeScript\ -l typescript
 .\tmp\tools\protocol-builder .\Protocol\ -o .\Output\PHP\ -l php -n ""
 
-pause
+$Host.UI.RawUI.ReadKey()
