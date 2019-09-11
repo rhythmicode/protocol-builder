@@ -18,8 +18,8 @@ steps:
   inputs:
     containerRegistry: 'rhythmicode_docker_hub'
     repository: 'rhythmicode/protocol-builder'
-    Dockerfile: ./Dockerfile
-    buildContext: .
+    Dockerfile: '**/Dockerfile'
+    buildContext: '**'
     tags: |
      $(gitTag)
      latest
