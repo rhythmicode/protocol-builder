@@ -7,6 +7,17 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: 'rhythmicode_docker_hub'
+    repository: 'rhythmicode/protocol-builder'
+    command: 'buildAndPush'
+    Dockerfile: './Dockerfile'
+    buildContext: '.'
+    tags: |
+      $(Build.BuildNumber)
+      latests
+
 - script: sh BuildExecutables.sh
   displayName: 'Build and create executables'
 
