@@ -74,13 +74,13 @@ namespace ProtocolBuilder.Converters
                 switch (Builder.Instance.Language)
                 {
                     case Languages.Swift:
-                        return "[" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "]";
+                        return "[" + SyntaxNode(name.TypeArgumentList).Trim('<', '>').Trim() + "]";
                     case Languages.Kotlin:
-                        return "ArrayList<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
+                        return "ArrayList<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>').Trim() + ">";
                     case Languages.TypeScript:
-                        return "Array<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>') + ">";
+                        return "Array<" + SyntaxNode(name.TypeArgumentList).Trim('<', '>').Trim() + ">";
                     case Languages.Php:
-                        return SyntaxNode(name.TypeArgumentList).Trim('<', '>') + "[]";
+                        return SyntaxNode(name.TypeArgumentList).Trim('<', '>').Trim() + "[]";
                     default:
                         throw new ArgumentException();
                 }

@@ -6,10 +6,12 @@
     <SharedGUID>9142bfd8-b57f-488a-8419-452fc3a341c2</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Roju.Shared</Import_RootNamespace>
+    <Import_RootNamespace>SampleProject.Protocol</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Body\AbstractReturn.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiBodyWithNestedRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiBodyWithNested.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserResetPasswordArg.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserResetPasswordReturn.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Body\ApiTokenPostArg.cs" />

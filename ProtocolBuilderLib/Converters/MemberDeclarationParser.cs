@@ -36,7 +36,7 @@ namespace ProtocolBuilder.Converters
                 var attOutput = default(string);
                 if (attribute.Name.ToString().ToLower().Contains("outputas"))
                 {
-                    var attLanguage = (Languages) Enum.Parse(typeof(Languages),
+                    var attLanguage = (Languages)Enum.Parse(typeof(Languages),
                         attribute.ArgumentList.Arguments[0].Expression.ToString().Split('.').Last());
                     if (attLanguage == Builder.Instance.Language)
                         attOutput = attribute.ArgumentList.Arguments[1].Expression.ToString().Trim('"');
@@ -101,7 +101,9 @@ namespace ProtocolBuilder.Converters
         private static string ParseClassOrInterface(TypeDeclarationSyntax declaration, bool isInterface)
         {
             Builder.Instance.EnumMapToNames.Clear();
-            Builder.Instance.ClassConstructorLines.Clear();
+            var constructorLinesPrev = Builder.Instance.ClassConstructorLines;
+            var constructorLines = new List<string>();
+            Builder.Instance.ClassConstructorLines = constructorLines;
             var parsedAttributes =
                 ParseAttributes(declaration.AttributeLists, NewLine + declaration.GetLeadingTrivia().ToFullString());
             var nameToUse = parsedAttributes.Item2;
@@ -180,7 +182,7 @@ namespace ProtocolBuilder.Converters
             }
 
             var outputMembers = declaration.Members.ConvertSyntaxList();
-            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor(declaration.BaseList != null);
+            var outputConstructor = Builder.Instance.LanguageConvertClassConstructor(declaration.BaseList != null, constructorLines);
             var outputEnumMapToName = "";
             if (isEnum)
                 outputEnumMapToName = Builder.Instance.LanguageConvertEnumMapToName();
@@ -191,6 +193,8 @@ namespace ProtocolBuilder.Converters
                 + outputConstructor
                 + outputEnumMapToName
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
+            
+            Builder.Instance.ClassConstructorLines = constructorLinesPrev;
             return output;
         }
 

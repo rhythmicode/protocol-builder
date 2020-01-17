@@ -896,10 +896,10 @@ namespace ProtocolBuilder
             }
         }
 
-        public string LanguageConvertClassConstructor(bool isClassExtended)
+        public string LanguageConvertClassConstructor(bool isClassExtended, List<string> constructorLines)
         {
             var result = "";
-            if (ClassConstructorLines.Count > 0)
+            if (constructorLines.Count > 0)
             {
                 switch (Language)
                 {
@@ -908,7 +908,7 @@ namespace ProtocolBuilder
                         result = $@"
 {BuilderStatic.Indent}{BuilderStatic.Indent}public function __construct()
 {BuilderStatic.Indent}{BuilderStatic.Indent}{{{(isClassExtended ? parentLine : "")}
-{string.Join(BuilderStatic.NewLine, ClassConstructorLines.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a};"))}
+{string.Join(BuilderStatic.NewLine, constructorLines.Select(a => $"{BuilderStatic.Indent}{BuilderStatic.Indent}{BuilderStatic.Indent}{a};"))}
 {BuilderStatic.Indent}{BuilderStatic.Indent}}}
 ";
                         break;

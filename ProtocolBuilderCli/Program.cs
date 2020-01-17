@@ -27,6 +27,22 @@ namespace ProtocolBuilderCli
                 //    "-l",
                 //    "typescript",
                 //};
+                //args = new[]
+                //{
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+                //    "-o",
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\Swift\"),
+                //    "-l",
+                //    "swift"
+                //};
+                //args = new[]
+                //{
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+                //    "-o",
+                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\Kotlin\"),
+                //    "-l",
+                //    "kotlin"
+                //};
             }
 #endif
 
