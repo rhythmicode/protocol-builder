@@ -12,3 +12,7 @@ Protocol builder can be used to define a shared protocol for use on different se
 
 # Credits
 This project at early stages was a fork from https://github.com/matthewsot/SharpSwift ❤
+
+# Create Releases
++ git tag -a vX.Y.Z -m "RELEASE TAG MESSAGE"
++ git push origin vX.Y.Z
