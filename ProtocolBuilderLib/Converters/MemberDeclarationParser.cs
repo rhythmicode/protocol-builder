@@ -193,7 +193,7 @@ namespace ProtocolBuilder.Converters
                 + outputConstructor
                 + outputEnumMapToName
                 + SyntaxTokenConvert(declaration.CloseBraceToken);
-            
+
             Builder.Instance.ClassConstructorLines = constructorLinesPrev;
             return output;
         }
@@ -450,13 +450,21 @@ namespace ProtocolBuilder.Converters
             var parsedAttributes = ParseAttributes(declaration.AttributeLists);
 
             var output = parsedAttributes.Item1;
-            var nameToUse = parsedAttributes.Item2;
 
             return declaration.ConvertTo(
                 output +
-                Builder.Instance.LanguageDeclaration(declaration.IsInsideEnum(), false, false, false,
-                    declaration.Identifier, declaration.Type, declaration.AttributeLists, declaration.Initializer,
-                    declaration.SemicolonToken)
+                Builder.Instance.LanguageDeclaration(
+                    declaration.IsInsideEnum(),
+                    false,
+                    false,
+                    false,
+                    declaration.Identifier,
+                    declaration.Type,
+                    declaration.AttributeLists,
+                    declaration.Initializer,
+                    declaration.SemicolonToken,
+                    declaration.GetLeadingTrivia()
+                )
             );
         }
 

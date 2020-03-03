@@ -71,7 +71,8 @@ namespace ProtocolBuilder.Converters
                     declaration.Type,
                     (declaration.Parent as BaseFieldDeclarationSyntax)?.AttributeLists,
                     currVar.Initializer,
-                    null
+                    null,
+                    declaration.Parent.GetLeadingTrivia()
                 );
             });
 

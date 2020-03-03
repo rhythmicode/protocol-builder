@@ -30,23 +30,15 @@ namespace ProtocolBuilder.Converters
         /// Converts a C# attribute, ignoring ProtocolBuilder-specific attributes
         /// </summary>
         /// <param name="attribute">The attribute to convert</param>
-        /// <returns>Swift code representing the same attribute</returns>
+        /// <returns>Code representing the same attribute</returns>
         [ParsesType(typeof (AttributeSyntax))]
         public static string AttributeSyntax(AttributeSyntax attribute)
         {
-            var output = "@" + SyntaxNode(attribute.Name).TrimEnd('!');
-
             if (IsProtocolBuilderAttribute(attribute) || attribute.ToString().ToLower().Contains("nullable"))
             {
                 return "";
             }
-
-            if (attribute.ArgumentList != null)
-            {
-                output += SyntaxNode(attribute.ArgumentList);
-            }
-
-            return output;
+            return Builder.Instance.LanguageConvertAttribute(attribute);
         }
     }
 }

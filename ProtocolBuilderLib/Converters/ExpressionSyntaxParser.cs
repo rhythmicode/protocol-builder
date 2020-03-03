@@ -268,6 +268,22 @@ namespace ProtocolBuilder.Converters
                     }
 
                     break;
+                case SyntaxKind.StringLiteralExpression:
+                    switch (Builder.Instance.Language)
+                    {
+                        case Languages.TypeScript:
+                            if (Builder.Instance.UseSingleQuotesStrings)
+                                r = $"'{expression.ToString().Trim(new[] { '"', '\'' })}'";
+                            else
+                                r = expression.ToString();
+                            break;
+                        case Languages.Swift:
+                        case Languages.Kotlin:
+                        case Languages.Php:
+                            r = expression.ToString();
+                            break;
+                    }
+                    break;
                 default:
                     r = expression.ToString();
                     break;

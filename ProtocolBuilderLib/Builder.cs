@@ -39,6 +39,16 @@ namespace ProtocolBuilder
         /// </summary>
         public string Namespace { get; set; } = null;
 
+        /// <summary>
+        /// Use single quotes on string constants
+        /// </summary>
+        public bool UseSingleQuotesStrings { get; private set; } = false;
+
+        /// <summary>
+        /// Use single quotes on imports
+        /// </summary>
+        public bool UseSingleQuotesImports { get; private set; } = false;
+
         public Builder(string[] args)
         {
             Indent = false;
@@ -97,6 +107,12 @@ namespace ProtocolBuilder
                         case "namespace":
                         case "n":
                             Namespace = arg;
+                            break;
+                        case "use-single-quotes-strings":
+                            UseSingleQuotesStrings = arg.ToLowerInvariant() == "true";
+                            break;
+                        case "use-single-quotes-imports":
+                            UseSingleQuotesImports = arg.ToLowerInvariant() == "true";
                             break;
                     }
                     namedArgument = null;
@@ -304,8 +320,9 @@ namespace ProtocolBuilder
                     }
                     break;
                 case Languages.TypeScript:
+                    var importOpenClose = Builder.Instance.UseSingleQuotesImports ? "'" : "\"";
                     foreach (var feUsingParsed in ParseUsingsAsRelativePath(root, rootNamespace))
-                        output += $"import {{ { feUsingParsed.name } }} from '{feUsingParsed.relativePath}';{BuilderStatic.NewLine}";
+                        output += $"import {{ { feUsingParsed.name } }} from {importOpenClose}{feUsingParsed.relativePath}{importOpenClose};{BuilderStatic.NewLine}";
                     break;
                 case Languages.Php:
                     {
@@ -669,9 +686,11 @@ namespace ProtocolBuilder
             TypeSyntax declarationType,
             SyntaxList<AttributeListSyntax>? attributes,
             EqualsValueClauseSyntax initializer,
-            SyntaxToken? semicolonToken
+            SyntaxToken? semicolonToken,
+            SyntaxTriviaList? declarationLeadingTrivia = null
         )
         {
+            var leadingLineSpaces = declarationLeadingTrivia?.ToFullString()?.Split('\n')?.Select(a1 => a1.Trim(new[] { '\n', '\r' }))?.FirstOrDefault(a1 => a1.Length > 1) ?? "";
             var resultPrefix = "";
             if (isEnum)
             {
@@ -713,6 +732,14 @@ namespace ProtocolBuilder
 
             var resultName = Converters.BuilderStatic.SyntaxTokenConvert(identifier).TrimEnd();
 
+            var hints = new List<string>();
+            var aObsolete = attributes?.SelectMany(a1 => a1.Attributes)?.FirstOrDefault(a1 => a1.Name.ToString().ToLowerInvariant() == "obsolete");
+            if (aObsolete != null)
+            {
+                var message = aObsolete.ArgumentList?.Arguments.FirstOrDefault()?.ToString().Trim('"') ?? "";
+                hints.Add(LanguageConvertAttributeObsoleteToHint(message));
+            }
+
             var resultType = "";
             if (!isEnum && !declarationType.IsVar)
             {
@@ -727,7 +754,11 @@ namespace ProtocolBuilder
                 switch (Language)
                 {
                     case Languages.Php:
-                        resultType = isConst ? "" : $"/** @var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")} */ ";
+                        if (!isConst)
+                        {
+                            hints.Add($"@var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")}");
+                        }
+                        resultType = "";
                         break;
                     case Languages.TypeScript:
                         resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? " | null" : "")}";
@@ -736,6 +767,22 @@ namespace ProtocolBuilder
                     case Languages.Kotlin:
                     default:
                         resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{((isNullable) ? "?" : "")}";
+                        break;
+                }
+            }
+
+            var resultHints = "";
+            if (hints.Count > 0)
+            {
+                switch (Language)
+                {
+                    case Languages.Php:
+                    case Languages.TypeScript:
+                        resultHints = $"/**\n{string.Join('\n', hints.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
+                        break;
+                    case Languages.Swift:
+                    case Languages.Kotlin:
+                        resultHints = $"{string.Join($"\n{leadingLineSpaces}", hints.Select(hint => $"{hint}"))}\n{leadingLineSpaces}";
                         break;
                 }
             }
@@ -828,13 +875,13 @@ namespace ProtocolBuilder
             switch (Language)
             {
                 case Languages.Php:
-                    result = $"{resultType}{resultPrefix}{(isEnum || isConst ? "" : "$")}{resultName}{resultInitializer}{resultPostfix}";
+                    result = $"{resultHints}{resultType}{resultPrefix}{(isEnum || isConst ? "" : "$")}{resultName}{resultInitializer}{resultPostfix}";
                     break;
                 case Languages.TypeScript:
                 case Languages.Kotlin:
                 case Languages.Swift:
                 default:
-                    result = $"{resultPrefix}{resultName}{resultType}{resultInitializer}{resultPostfix}";
+                    result = $"{resultHints}{resultPrefix}{resultName}{resultType}{resultInitializer}{resultPostfix}";
                     break;
             }
 
@@ -941,6 +988,64 @@ namespace ProtocolBuilder
                     default:
                         break;
                 }
+            }
+            return result;
+        }
+
+        public string LanguageConvertAttribute(AttributeSyntax attribute)
+        {
+            string result;
+            switch (attribute.Name.ToString().ToLower())
+            {
+                // Just ignore attributes we handle on correct places
+                case "obsolete":
+                    result = "";
+                    break;
+                default:
+                    result = BuilderStatic.SyntaxNode(attribute.Name);
+                    switch (Language)
+                    {
+                        case Languages.Swift:
+                            result = $"@{result.TrimEnd('!')}";
+                            break;
+                        case Languages.Kotlin:
+                            result = $"@{result}";
+                            break;
+                        case Languages.TypeScript:
+                            result = $"/** {result} */ ";
+                            break;
+                        case Languages.Php:
+                            result = $"/** {result} */\n";
+                            break;
+                    }
+                    if (attribute.ArgumentList != null)
+                    {
+                        result += BuilderStatic.SyntaxNode(attribute.ArgumentList);
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
+        private string LanguageConvertAttributeObsoleteToHint(string message)
+        {
+            var result = "";
+            switch (Language)
+            {
+                case Languages.Swift:
+                    result = $"@available(*, deprecated{(string.IsNullOrEmpty(message) ? "" : $", message: \"{message}\"")})";
+                    break;
+                case Languages.Kotlin:
+                    result = $"@Deprecated(message = \"{message}\")";
+                    break;
+                case Languages.TypeScript:
+                    result = $"@deprecated{(string.IsNullOrEmpty(message) ? "" : $" Message: {message}")}";
+                    break;
+                case Languages.Php:
+                    //result = $"/**\n * @deprecated{(string.IsNullOrEmpty(message) ? "" : $" Message: {message}")}\n */\n";
+                    result = $"@deprecated{(string.IsNullOrEmpty(message) ? "" : $" Message: {message}")}";
+                    break;
             }
             return result;
         }

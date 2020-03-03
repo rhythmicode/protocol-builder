@@ -8,6 +8,10 @@ namespace SampleProject.Protocol.Context
     public static class Languages
     {
         public const string English = "en";
+        
+        [Obsolete("Please use Finnish")]
+        public const string Suomi = "fi-old";
+        
         public const string Finnish = "fi";
     }
 }
