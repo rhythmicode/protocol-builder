@@ -819,7 +819,7 @@ namespace ProtocolBuilder
                 else
                 {
                     if (initializer.Value.ToString() == "DateTime.UtcNow" || initializer.Value.ToString() == "DateTime.Now")
-                        resultInitializer = " = \"\"";
+                        resultInitializer = $" = {LanguageConvertLiteralExpressionString("\"\"")}";
                     else
                         resultInitializer = " " + Converters.BuilderStatic.SyntaxNode(initializer);
 
@@ -1048,6 +1048,26 @@ namespace ProtocolBuilder
                     break;
             }
             return result;
+        }
+
+        public string LanguageConvertLiteralExpressionString(string expressionAsString)
+        {
+            var r = "";
+            switch (Builder.Instance.Language)
+            {
+                case Languages.TypeScript:
+                    if (Builder.Instance.UseSingleQuotesStrings)
+                        r = $"'{expressionAsString.Trim(new[] { '"', '\'' })}'";
+                    else
+                        r = expressionAsString;
+                    break;
+                case Languages.Swift:
+                case Languages.Kotlin:
+                case Languages.Php:
+                    r = expressionAsString;
+                    break;
+            }
+            return r;
         }
     }
 }
