@@ -9,28 +9,28 @@ namespace ProtocolBuilderCli
 #if DEBUG
             if (args.Length <= 0)
             {
-                //args = new[]
-                //{
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                //    "-o",
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\PHP\"),
-                //    "-l",
-                //    "php",
-                //    "-n",
-                //    ""
-                //};
                 args = new[]
                 {
-                    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                    "-o",
-                    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
-                    "-l",
-                    "typescript",
-                    "--use-single-quotes-imports",
-                    "true",
-                    "--use-single-quotes-strings",
-                    "true",
+                   System.IO.Path.GetFullPath(@"..\SampleSetup\Protocol\"),
+                   "-o",
+                   System.IO.Path.GetFullPath(@"..\SampleSetup\Output\PHP\"),
+                   "-l",
+                   "php",
+                   "-n",
+                   ""
                 };
+                // args = new[]
+                // {
+                //     System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
+                //     "-o",
+                //     System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
+                //     "-l",
+                //     "typescript",
+                //     "--use-single-quotes-imports",
+                //     "true",
+                //     "--use-single-quotes-strings",
+                //     "true",
+                // };
                 //args = new[]
                 //{
                 //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),

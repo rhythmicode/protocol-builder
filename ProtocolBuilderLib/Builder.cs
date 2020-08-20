@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ProtocolBuilder
 {
@@ -261,13 +262,6 @@ namespace ProtocolBuilder
                 default:
                     break;
             }
-            //var doc = GetDocumentFromSolution(solutionPath, path);
-            //Console.WriteLine("Step1");
-            //if (doc == null)
-            //    return null;
-            //Console.WriteLine("Step2");
-            //var tree = doc.GetSyntaxTreeAsync().Result;
-            //ConvertToSwift.Model = doc.GetSemanticModelAsync().Result;
             var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(path));
             var compilation = CSharpCompilation.Create("Virta.Shared.Analysis")
                 .AddReferences(
@@ -278,32 +272,6 @@ namespace ProtocolBuilder
 
             var root = (CompilationUnitSyntax)tree.GetRoot();
             var rootNamespace = root.Members.OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
-            /*
-
-                        // Search for summary section
-                        var rootString = root.ToString();
-                        var summaryTermStart = "/// <summary>";
-                        var summaryTermEnd = "/// </summary>";
-                        var summaryIndexStart = rootString.IndexOf(summaryTermStart);
-                        var summaryIndexEnd = -1;
-                        if (summaryIndexStart > 0)
-                            summaryIndexEnd = rootString.IndexOf(summaryTermEnd, summaryIndexStart + summaryTermStart.Length);
-                        var summaryText = "";
-                        if (summaryIndexStart > 0 && summaryIndexEnd > summaryIndexStart)
-                        {
-                            summaryText = rootString.Substring(summaryIndexStart + summaryTermStart.Length, summaryIndexEnd - summaryIndexStart - summaryTermStart.Length).Trim();
-                            summaryText = string.Join("\n", summaryText.Split('\n').Select(a1 => a1.Trim()));
-                            summaryText = summaryText.Replace("///", "//");
-                            summaryText = "//" + ConvertToSwift.NewLine + summaryText;
-                        }
-
-                        // Search for "//import XYZ" in the usings to output in the final Swift code
-
-                        //output = root.Usings.Aggregate(output, (current, usingDir) => current + GetImportsFromTrivia(usingDir.GetLeadingTrivia()));
-                        //output += GetImportsFromTrivia(root.Usings.Last().GetTrailingTrivia());
-                        //output += GetImportsFromTrivia(rootNamespace.GetLeadingTrivia());
-                        //output += "" + ConvertToSwift.NewLine;
-            */
 
             switch (Language)
             {
@@ -677,6 +645,38 @@ namespace ProtocolBuilder
 
         public List<(string typeName, string fullPath)?> Imports = new List<(string typeName, string fullPath)?>();
 
+        private string FindLeadingLineSpaces(SyntaxTriviaList? declarationLeadingTrivia)
+        {
+            var result = declarationLeadingTrivia
+                ?.Cast<SyntaxTrivia?>()
+                ?.LastOrDefault(a1 => a1?.Kind() == SyntaxKind.WhitespaceTrivia)
+                ?.ToString();
+            if (result != null)
+                return result;
+            return declarationLeadingTrivia?.ToFullString()?.Split('\n')?.Select(a1 => a1.Trim(new[] { '\n', '\r' }))?.FirstOrDefault(a1 => a1.Length > 1) ?? "";
+        }
+
+        private Regex findDocRegex = new Regex(@"<summary>([^<]+)</summary>");
+        private List<string> FindDocumentationLines(SyntaxTriviaList? declarationLeadingTrivia)
+        {
+            var result = new List<string>();
+            var doc = declarationLeadingTrivia
+                ?.Cast<SyntaxTrivia?>()
+                ?.LastOrDefault(a1 => a1?.Kind() == SyntaxKind.SingleLineDocumentationCommentTrivia);
+            if (doc == null)
+                return result;
+            var docSummaryMatch = findDocRegex.Match(doc?.ToFullString());
+            if (docSummaryMatch.Success)
+            {
+                result.AddRange(docSummaryMatch.Groups[1].Value
+                    .Split('\n')
+                    .Select(a1 => a1.Trim(new char[] { ' ', '/', '\r' }))
+                    .Where(a1 => !string.IsNullOrWhiteSpace(a1))
+                );
+            }
+            return result;
+        }
+
         public string LanguageDeclaration(
             bool isEnum,
             bool isStatic,
@@ -690,7 +690,7 @@ namespace ProtocolBuilder
             SyntaxTriviaList? declarationLeadingTrivia = null
         )
         {
-            var leadingLineSpaces = declarationLeadingTrivia?.ToFullString()?.Split('\n')?.Select(a1 => a1.Trim(new[] { '\n', '\r' }))?.FirstOrDefault(a1 => a1.Length > 1) ?? "";
+            var leadingLineSpaces = FindLeadingLineSpaces(declarationLeadingTrivia);
             var resultPrefix = "";
             if (isEnum)
             {
@@ -733,6 +733,11 @@ namespace ProtocolBuilder
             var resultName = Converters.BuilderStatic.SyntaxTokenConvert(identifier).TrimEnd();
 
             var hints = new List<string>();
+            var docLines = FindDocumentationLines(declarationLeadingTrivia);
+            if (docLines.Count > 0)
+            {
+                hints.AddRange(docLines);
+            }
             var aObsolete = attributes?.SelectMany(a1 => a1.Attributes)?.FirstOrDefault(a1 => a1.Name.ToString().ToLowerInvariant() == "obsolete");
             if (aObsolete != null)
             {

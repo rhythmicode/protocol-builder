@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS base
+# USE sdk as base to let the output image be capable of build, ...
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build
