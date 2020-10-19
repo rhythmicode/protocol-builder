@@ -645,7 +645,7 @@ namespace ProtocolBuilder
 
         public List<(string typeName, string fullPath)?> Imports = new List<(string typeName, string fullPath)?>();
 
-        private string FindLeadingLineSpaces(SyntaxTriviaList? declarationLeadingTrivia)
+        public string FindLeadingLineSpaces(SyntaxTriviaList? declarationLeadingTrivia)
         {
             var result = declarationLeadingTrivia
                 ?.Cast<SyntaxTrivia?>()
@@ -785,9 +785,14 @@ namespace ProtocolBuilder
                     case Languages.TypeScript:
                         resultHints = $"/**\n{string.Join('\n', hints.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
                         break;
-                    case Languages.Swift:
                     case Languages.Kotlin:
-                        resultHints = $"{string.Join($"\n{leadingLineSpaces}", hints.Select(hint => $"{hint}"))}\n{leadingLineSpaces}";
+                    case Languages.Swift:
+                        var hintsNotAttributes = hints.Where(a => !a.StartsWith('@')).ToList();
+                        if (hintsNotAttributes.Count > 0)
+                            resultHints += $"/**\n{string.Join('\n', hintsNotAttributes.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
+                        var hintsAttributes = hints.Where(a => a.StartsWith('@')).ToList();
+                        if (hintsAttributes.Count > 0)
+                            resultHints += $"{string.Join($"\n{leadingLineSpaces}", hintsAttributes.Select(hint => $"{hint}"))}\n{leadingLineSpaces}";
                         break;
                 }
             }

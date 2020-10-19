@@ -8,19 +8,12 @@ class ApiTokenPostArg {
      */
     public $UserName;
 
-    /// <summary>
-    /// A sample summary.
-    /// </summary>
     /**
      * A sample summary.
      * @var int
      */
     public $UserNameKind;
 
-    /// <summary>
-    /// A multiline summary.
-    /// test explanations :)
-    /// </summary>
     /**
      * A multiline summary.
      * test explanations :)

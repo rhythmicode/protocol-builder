@@ -121,7 +121,11 @@ namespace ProtocolBuilder.Converters
 
         public static string ConvertTo(this SyntaxNode source, string middle)
         {
-            return $"{source.GetLeadingTrivia().ToFullString()}{middle}{source.GetTrailingTrivia().ToFullString()}";
+            var leadingText = source.GetLeadingTrivia().ToFullString();
+            var possibleNewLine = leadingText.Contains("\n")
+                ? "\n"
+                : "";
+            return $"{possibleNewLine}{Builder.Instance.FindLeadingLineSpaces(source.GetLeadingTrivia())}{middle}{source.GetTrailingTrivia().ToFullString()}";
         }
 
         public static bool FindInParents<T>(this SyntaxNode source)

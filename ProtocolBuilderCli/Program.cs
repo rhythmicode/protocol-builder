@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ProtocolBuilderCli
 {
@@ -6,50 +7,64 @@ namespace ProtocolBuilderCli
     {
         static void Main(string[] args)
         {
-#if DEBUG
-            if (args.Length <= 0)
+#if !DEBUG
+            RunWithArgs(args);
+            return;
+#endif
+            if (args.Length > 0)
             {
-                args = new[]
+                RunWithArgs(args);
+                return;
+            }
+
+            var sampleSetupRoot = @"..\SampleSetup";
+            var allArgs = new List<string[]>();
+            allArgs.Add(new[]
                 {
-                   System.IO.Path.GetFullPath(@"..\SampleSetup\Protocol\"),
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
                    "-o",
-                   System.IO.Path.GetFullPath(@"..\SampleSetup\Output\PHP\"),
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\PHP\"),
                    "-l",
                    "php",
                    "-n",
                    ""
-                };
-                // args = new[]
-                // {
-                //     System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                //     "-o",
-                //     System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\TypeScript\"),
-                //     "-l",
-                //     "typescript",
-                //     "--use-single-quotes-imports",
-                //     "true",
-                //     "--use-single-quotes-strings",
-                //     "true",
-                // };
-                //args = new[]
-                //{
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                //    "-o",
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\Swift\"),
-                //    "-l",
-                //    "swift"
-                //};
-                //args = new[]
-                //{
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Protocol\"),
-                //    "-o",
-                //    System.IO.Path.GetFullPath(@"..\..\..\..\SampleSetup\Output\Kotlin\"),
-                //    "-l",
-                //    "kotlin"
-                //};
+                });
+            allArgs.Add(new[]
+            {
+                    System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
+                    "-o",
+                    System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\TypeScript\"),
+                    "-l",
+                    "typescript",
+                    "--use-single-quotes-imports",
+                    "true",
+                    "--use-single-quotes-strings",
+                    "true",
+                });
+            allArgs.Add(new[]
+                {
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
+                   "-o",
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\Swift\"),
+                   "-l",
+                   "swift"
+                });
+            allArgs.Add(new[]
+                {
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
+                   "-o",
+                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\Kotlin\"),
+                   "-l",
+                   "kotlin"
+                });
+            foreach (var feArgs in allArgs)
+            {
+                RunWithArgs(feArgs);
             }
-#endif
+        }
 
+        static void RunWithArgs(string[] args)
+        {
             var builder = new ProtocolBuilder.Builder(args);
             if (!builder.Clean())
             {

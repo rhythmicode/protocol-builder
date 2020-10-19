@@ -6,7 +6,7 @@ class AbstractReturn {
      * @var string
      */
     public $InsertDate;
-        
+
     /**
      * @var int
      */
