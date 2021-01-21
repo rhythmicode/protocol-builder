@@ -41,6 +41,11 @@ namespace ProtocolBuilder
         public string Namespace { get; set; } = null;
 
         /// <summary>
+        /// Number of namespaces from root which will be skipped for folder creation
+        /// </summary>
+        public int FolderHierarchySkipNamespaceFromRoot { get; set; } = 0;
+
+        /// <summary>
         /// Use single quotes on string constants
         /// </summary>
         public bool UseSingleQuotesStrings { get; private set; } = false;
@@ -108,6 +113,9 @@ namespace ProtocolBuilder
                         case "namespace":
                         case "n":
                             Namespace = arg;
+                            break;
+                        case "folder-hierarchy-skip-namespace-from-root":
+                            FolderHierarchySkipNamespaceFromRoot = int.Parse(arg);
                             break;
                         case "use-single-quotes-strings":
                             UseSingleQuotesStrings = arg.ToLowerInvariant() == "true";
@@ -359,12 +367,16 @@ namespace ProtocolBuilder
             var saveRelativeDir = "";
             switch (Language)
             {
-                case Languages.Php:
-                case Languages.TypeScript:
-                case Languages.Kotlin:
-                    saveRelativeDir = $"{string.Join("/", rootNamespace.Name.ToString().Split('.'))}";
+                case Languages.Swift:
+                    saveRelativeDir = "";
                     break;
                 default:
+                    var namespaceFolders = rootNamespace.Name.ToString().Split('.');
+                    if (FolderHierarchySkipNamespaceFromRoot > 0)
+                    {
+                        namespaceFolders = namespaceFolders.Skip(FolderHierarchySkipNamespaceFromRoot).ToArray();
+                    }
+                    saveRelativeDir = $"{string.Join("/", namespaceFolders)}";
                     break;
             }
 

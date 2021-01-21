@@ -1,4 +1,4 @@
-package SampleProject.Interface
+package SampleProject.Protocol.Interface
 
 interface Crud {
     fun Create(param1: String, param2: Int)

@@ -8,5 +8,6 @@ namespace SampleProject.Protocol.Body
     {
         public string access_token = "";
         public string ExpireDateIso = "";
+        public Dictionary<string, string> TestDict { get; set; } = new Dictionary<string, string>();
     }
 }

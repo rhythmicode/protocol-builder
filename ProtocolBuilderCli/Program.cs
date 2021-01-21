@@ -26,6 +26,8 @@ namespace ProtocolBuilderCli
                    System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\PHP\"),
                    "-l",
                    "php",
+                   "--folder-hierarchy-skip-namespace-from-root",
+                   "2",
                    "-n",
                    ""
                 });

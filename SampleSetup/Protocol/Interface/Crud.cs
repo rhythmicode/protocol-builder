@@ -1,4 +1,4 @@
-namespace SampleProject.Interface
+namespace SampleProject.Protocol.Interface
 {
     public interface Crud
     {
