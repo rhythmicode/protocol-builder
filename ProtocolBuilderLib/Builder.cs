@@ -21,6 +21,11 @@ namespace ProtocolBuilder
         public Languages Language { get; set; } = Languages.Swift;
 
         /// <summary>
+        /// Target language version
+        /// </summary>
+        public Version? LanguageVersion { get; set; } = null;
+
+        /// <summary>
         /// Path to the folder to parse
         /// </summary>
         public string InputPath { get; set; }
@@ -113,6 +118,10 @@ namespace ProtocolBuilder
                         case "namespace":
                         case "n":
                             Namespace = arg;
+                            break;
+                        case "language-version":
+                        case "lv":
+                            LanguageVersion = Version.Parse(arg);
                             break;
                         case "folder-hierarchy-skip-namespace-from-root":
                             FolderHierarchySkipNamespaceFromRoot = int.Parse(arg);
@@ -475,7 +484,7 @@ namespace ProtocolBuilder
             }
             result.AddRange(rootNamespace
                 .Members
-                .OfType<ClassDeclarationSyntax>()
+                .OfType<TypeDeclarationSyntax>()
                 .SelectMany(c => c.AttributeLists)
                 .SelectMany(a => a.Attributes)
                 .Where(a => a.Name.ToString() == nameof(UsingRef))
@@ -699,10 +708,10 @@ namespace ProtocolBuilder
             SyntaxList<AttributeListSyntax>? attributes,
             EqualsValueClauseSyntax initializer,
             SyntaxToken? semicolonToken,
-            SyntaxTriviaList? declarationLeadingTrivia = null
+            SyntaxTriviaList? declarationLeadingTrivia = null,
+            bool isMethodParameter = false
         )
         {
-            var leadingLineSpaces = FindLeadingLineSpaces(declarationLeadingTrivia);
             var resultPrefix = "";
             if (isEnum)
             {
@@ -719,6 +728,10 @@ namespace ProtocolBuilder
                         resultPrefix = $"const ";
                         break;
                 }
+            }
+            else if (isMethodParameter)
+            {
+                resultPrefix = "";
             }
             else
             {
@@ -771,11 +784,22 @@ namespace ProtocolBuilder
                 switch (Language)
                 {
                     case Languages.Php:
-                        if (!isConst)
+                        if ((LanguageVersion >= new Version(8, 0) || isMethodParameter) && !(isConst || declarationType.IsTypeList() || declarationType.IsTypeDictionary()))
                         {
-                            hints.Add($"@var {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? "|null" : "")}");
+                            resultType = $"{(isNullable ? "?" : "")}{Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()} ";
                         }
-                        resultType = "";
+                        else
+                        {
+                            if (!isConst)
+                            {
+                                var hint = isMethodParameter ? "@param " : "@var ";
+                                hint += Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd();
+                                hint += isNullable ? "|null" : "";
+                                hint += isMethodParameter ? $" ${resultName}" : "";
+                                hints.Add(hint);
+                            }
+                            resultType = "";
+                        }
                         break;
                     case Languages.TypeScript:
                         resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{(isNullable ? " | null" : "")}";
@@ -784,27 +808,6 @@ namespace ProtocolBuilder
                     case Languages.Kotlin:
                     default:
                         resultType = $": {Converters.BuilderStatic.SyntaxNode(declarationType).TrimEnd()}{((isNullable) ? "?" : "")}";
-                        break;
-                }
-            }
-
-            var resultHints = "";
-            if (hints.Count > 0)
-            {
-                switch (Language)
-                {
-                    case Languages.Php:
-                    case Languages.TypeScript:
-                        resultHints = $"/**\n{string.Join('\n', hints.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
-                        break;
-                    case Languages.Kotlin:
-                    case Languages.Swift:
-                        var hintsNotAttributes = hints.Where(a => !a.StartsWith('@')).ToList();
-                        if (hintsNotAttributes.Count > 0)
-                            resultHints += $"/**\n{string.Join('\n', hintsNotAttributes.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
-                        var hintsAttributes = hints.Where(a => a.StartsWith('@')).ToList();
-                        if (hintsAttributes.Count > 0)
-                            resultHints += $"{string.Join($"\n{leadingLineSpaces}", hintsAttributes.Select(hint => $"{hint}"))}\n{leadingLineSpaces}";
                         break;
                 }
             }
@@ -897,16 +900,47 @@ namespace ProtocolBuilder
             switch (Language)
             {
                 case Languages.Php:
-                    result = $"{resultHints}{resultType}{resultPrefix}{(isEnum || isConst ? "" : "$")}{resultName}{resultInitializer}{resultPostfix}";
+                    result = $"{resultPrefix}{resultType}{(isEnum || isConst ? "" : "$")}{resultName}{resultInitializer}{resultPostfix}";
                     break;
                 case Languages.TypeScript:
                 case Languages.Kotlin:
                 case Languages.Swift:
                 default:
-                    result = $"{resultHints}{resultPrefix}{resultName}{resultType}{resultInitializer}{resultPostfix}";
+                    result = $"{resultPrefix}{resultName}{resultType}{resultInitializer}{resultPostfix}";
                     break;
             }
 
+            _Hints.AddRange(hints);
+            return result;
+        }
+
+        private List<string> _Hints = new List<string>();
+        public void HintsClear()
+        {
+            _Hints.Clear();
+        }
+        public string HintsGenerate(string leadingLineSpaces)
+        {
+            var result = "";
+            if (_Hints.Count > 0)
+            {
+                switch (Language)
+                {
+                    case Languages.Php:
+                    case Languages.TypeScript:
+                        result = $"/**\n{string.Join('\n', _Hints.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
+                        break;
+                    case Languages.Kotlin:
+                    case Languages.Swift:
+                        var hintsNotAttributes = _Hints.Where(a => !a.StartsWith('@')).ToList();
+                        if (hintsNotAttributes.Count > 0)
+                            result += $"/**\n{string.Join('\n', hintsNotAttributes.Select(hint => $"{leadingLineSpaces} * {hint}"))}\n{leadingLineSpaces} */\n{leadingLineSpaces}";
+                        var hintsAttributes = _Hints.Where(a => a.StartsWith('@')).ToList();
+                        if (hintsAttributes.Count > 0)
+                            result += $"{string.Join($"\n{leadingLineSpaces}", hintsAttributes.Select(hint => $"{hint}"))}\n{leadingLineSpaces}";
+                        break;
+                }
+            }
             return result;
         }
 

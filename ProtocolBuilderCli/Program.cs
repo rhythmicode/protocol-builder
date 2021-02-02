@@ -17,25 +17,41 @@ namespace ProtocolBuilderCli
                 return;
             }
 
-            var sampleSetupRoot = @"..\SampleSetup";
+            var sampleSetupRoot = System.IO.Path.Combine("..", "SampleSetup");
             var allArgs = new List<string[]>();
             allArgs.Add(new[]
                 {
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
+                   System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Protocol")),
                    "-o",
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\PHP\"),
+                   System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Output","PHP")),
                    "-l",
                    "php",
+                   "--language-version",
+                   "7.4",
                    "--folder-hierarchy-skip-namespace-from-root",
                    "2",
                    "-n",
                    ""
                 });
             allArgs.Add(new[]
-            {
-                    System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
+                {
+                   System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Protocol")),
+                   "-o",
+                   System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Output","PHP_8")),
+                   "-l",
+                   "php",
+                   "--language-version",
+                   "8.0",
+                   "--folder-hierarchy-skip-namespace-from-root",
+                   "2",
+                   "-n",
+                   ""
+                });
+            allArgs.Add(new[]
+                {
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Protocol")),
                     "-o",
-                    System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\TypeScript\"),
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Output","TypeScript")),
                     "-l",
                     "typescript",
                     "--use-single-quotes-imports",
@@ -45,19 +61,19 @@ namespace ProtocolBuilderCli
                 });
             allArgs.Add(new[]
                 {
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
-                   "-o",
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\Swift\"),
-                   "-l",
-                   "swift"
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Protocol")),
+                    "-o",
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Output","Swift")),
+                    "-l",
+                    "swift"
                 });
             allArgs.Add(new[]
                 {
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Protocol\"),
-                   "-o",
-                   System.IO.Path.GetFullPath($@"{sampleSetupRoot}\Output\Kotlin\"),
-                   "-l",
-                   "kotlin"
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Protocol")),
+                    "-o",
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(sampleSetupRoot,"Output","Kotlin")),
+                    "-l",
+                    "kotlin"
                 });
             foreach (var feArgs in allArgs)
             {
