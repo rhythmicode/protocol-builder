@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS base
+FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 COPY ProtocolBuilderCli/ProtocolBuilderCli.csproj ProtocolBuilderCli/
 COPY ProtocolBuilderLibCore/ProtocolBuilderLibCore.csproj ProtocolBuilderLibCore/
