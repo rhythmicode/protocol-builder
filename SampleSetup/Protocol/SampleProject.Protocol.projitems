@@ -9,22 +9,6 @@
     <Import_RootNamespace>SampleProject.Protocol</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Body\AbstractReturn.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiBodyWithNestedRef.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiBodyWithNested.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserResetPasswordArg.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserResetPasswordReturn.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiTokenPostArg.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiTokenPostReturn.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserRegisterArg.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Body\ApiUserRegisterReturn.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Context\Constants.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Context\CurrencyTypes.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Context\Languages.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interface\Crud.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\AbstractModelWithId.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\ApiAddress.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\ApiCity.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\ApiCountry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
   </ItemGroup>
 </Project>

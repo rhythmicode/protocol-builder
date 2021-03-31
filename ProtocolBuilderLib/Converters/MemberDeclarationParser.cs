@@ -231,6 +231,7 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(MethodDeclarationSyntax))]
         public static string MethodDeclaration(MethodDeclarationSyntax method)
         {
+            Builder.Instance.HintsClear();
             var parsedAttributes = ParseAttributes(method.AttributeLists);
 
             var output = parsedAttributes.Item1;
@@ -242,6 +243,12 @@ namespace ProtocolBuilder.Converters
             {
                 case Languages.Kotlin:
                     output += "fun ";
+                    break;
+                case Languages.Php:
+                    output += "function ";
+                    break;
+                case Languages.TypeScript:
+                    output += "";
                     break;
                 case Languages.Swift:
                 default:
@@ -269,21 +276,26 @@ namespace ProtocolBuilder.Converters
                         hasReturnType = returnTypeResult != "Unit";
                         break;
                     case Languages.Swift:
+                        hasReturnType = returnTypeResult != "Void";
+                        break;
                     default:
                         break;
                 }
             }
 
-            if (hasReturnType)
+            if (hasReturnType && !string.IsNullOrWhiteSpace(returnTypeResult))
             {
                 switch (Builder.Instance.Language)
                 {
+                    case Languages.TypeScript:
+                    case Languages.Php:
+                        output += ": " + returnTypeResult;
+                        break;
                     case Languages.Kotlin:
                         output += ": " + returnTypeResult;
                         break;
                     case Languages.Swift:
-                        if (returnTypeResult != "Void")
-                            output += " -> " + returnTypeResult;
+                        output += " -> " + returnTypeResult;
                         break;
                     default:
                         output += " -> " + returnTypeResult;
@@ -291,9 +303,25 @@ namespace ProtocolBuilder.Converters
                 }
             }
 
+            switch (Builder.Instance.Language)
+            {
+                case Languages.Php:
+                case Languages.TypeScript:
+                    output += ";";
+                    break;
+                default:
+                    break;
+            }
+
             output +=
                 " "
                 + SyntaxNode(method.Body).TrimStart();
+
+            var hints = Builder.Instance.HintsGenerate(Builder.Instance.FindLeadingLineSpaces(method.GetLeadingTrivia()));
+            if (!string.IsNullOrWhiteSpace(hints))
+            {
+                output = hints + output;
+            }
             return method.ConvertTo(output.Trim());
         }
 
@@ -451,9 +479,8 @@ namespace ProtocolBuilder.Converters
 
             var output = parsedAttributes.Item1;
 
-            return declaration.ConvertTo(
-                output +
-                Builder.Instance.LanguageDeclaration(
+            Builder.Instance.HintsClear();
+            var declarationOutput = Builder.Instance.LanguageDeclaration(
                     declaration.IsInsideEnum(),
                     false,
                     false,
@@ -464,7 +491,13 @@ namespace ProtocolBuilder.Converters
                     declaration.Initializer,
                     declaration.SemicolonToken,
                     declaration.GetLeadingTrivia()
-                )
+                );
+            return declaration.ConvertTo(
+                output +
+                Builder.Instance.HintsGenerate(
+                    Builder.Instance.FindLeadingLineSpaces(declaration.GetLeadingTrivia())
+                ) +
+                declarationOutput
             );
         }
 

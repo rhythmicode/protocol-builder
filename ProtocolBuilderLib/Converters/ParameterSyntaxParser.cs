@@ -14,20 +14,29 @@ namespace ProtocolBuilder.Converters
         [ParsesType(typeof(ParameterSyntax))]
         public static string Parameter(ParameterSyntax param)
         {
-            if (param.Type == null) return param.Identifier.Text;
-
+            var typeSyntax = param.Type;
             if (param.Type is IdentifierNameSyntax)
             {
-                return param.Identifier.Text + ": " + Type(((IdentifierNameSyntax)param.Type).Identifier.Text);
+                typeSyntax = (IdentifierNameSyntax)param.Type;
             }
-
-            // TODO: Double check the variadic parameters handling
             if (param.Modifiers.Any(mod => mod.ToString() == "params"))
             {
-                return param.Identifier.Text + ": " + SyntaxNode(((ArrayTypeSyntax)param.Type).ElementType) + "...";
+                typeSyntax = ((ArrayTypeSyntax)param.Type);
             }
 
-            return param.Identifier.Text + ": " + SyntaxNode(param.Type);
+            return Builder.Instance.LanguageDeclaration(
+                    false,
+                    false,
+                    false,
+                    false,
+                    param.Identifier,
+                    param.Type,
+                    null,
+                    param.Default,
+                    null,
+                    param.GetLeadingTrivia(),
+                    true
+                );
         }
 
         /// <summary>

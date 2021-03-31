@@ -62,7 +62,8 @@ namespace ProtocolBuilder.Converters
             output = "";
             output += declaration.Variables.ConvertSeparatedSyntaxList(currVar =>
             {
-                return Builder.Instance.LanguageDeclaration(
+                Builder.Instance.HintsClear();
+                var declarationOutput = Builder.Instance.LanguageDeclaration(
                     isEnum,
                     isStatic,
                     isConst,
@@ -74,6 +75,9 @@ namespace ProtocolBuilder.Converters
                     null,
                     declaration.Parent.GetLeadingTrivia()
                 );
+                return Builder.Instance.HintsGenerate(
+                    Builder.Instance.FindLeadingLineSpaces(declaration.Parent.GetLeadingTrivia())
+                ) + declarationOutput;
             });
 
             return output.TrimEnd(' ');
