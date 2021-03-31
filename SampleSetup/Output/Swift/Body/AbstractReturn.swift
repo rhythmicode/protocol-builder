@@ -1,5 +1,5 @@
 struct AbstractReturn: Codable {
-    var InsertDate: string = ""
+    var InsertDate: String = ""
 
     var ResultEnumId: Int = 0
 

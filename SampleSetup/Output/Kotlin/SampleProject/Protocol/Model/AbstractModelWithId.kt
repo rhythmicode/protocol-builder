@@ -4,12 +4,12 @@ open class AbstractModelWithId {
     var Id: String
 
     var InsertUserName: String
-    var InsertDate: string?
+    var InsertDate: String?
 
     var UpdateUserName: String
-    var UpdateDate: string?
+    var UpdateDate: String?
 
     var RemoveIs: Boolean
     var RemoveUserName: String
-    var RemoveDate: string?
+    var RemoveDate: String?
 }

@@ -289,6 +289,7 @@ namespace ProtocolBuilder
 
             var root = (CompilationUnitSyntax)tree.GetRoot();
             var rootNamespace = root.Members.OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+            Instance.Imports.Clear();
 
             switch (Language)
             {
@@ -297,9 +298,18 @@ namespace ProtocolBuilder
                 case Languages.Kotlin:
                     {
                         output += $"package {rootNamespace.Name}{BuilderStatic.NewLine}{BuilderStatic.NewLine}";
-                        var imports = ParseUsings(root)
+                        var importNamespaces = ParseUsings(root);
+                        var imports = importNamespaces
                             .Select(a => $"import {a.ns}.*")
                             .ToList();
+                        var importsByUsingRefs = ParseUsingsAsRelativePath(root, rootNamespace)
+                            .Select(a => (a.name, fullPath: RelativeNamespacePathToAbs(rootNamespace, a.relativePath)))
+                            .ToList();
+                        imports.AddRange(importsByUsingRefs
+                            .Where(a => a.fullPath.Replace($".{a.name}", "") != rootNamespace.Name.ToString())
+                            .Where(a => !importNamespaces.Exists(b => $"{b.ns}.{a.name}" == a.fullPath))
+                            .Select(a => $"import {a.fullPath}")
+                        );
                         if (imports.Count > 0)
                             output += string.Join(BuilderStatic.NewLine, imports.Distinct()) + BuilderStatic.NewLine;
                     }

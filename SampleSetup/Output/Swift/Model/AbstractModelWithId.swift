@@ -2,12 +2,12 @@ struct AbstractModelWithId: Codable {
     let Id: String
 
     let InsertUserName: String
-    let InsertDate: string?
+    let InsertDate: String?
 
     let UpdateUserName: String
-    let UpdateDate: string?
+    let UpdateDate: String?
 
     let RemoveIs: Bool
     let RemoveUserName: String
-    let RemoveDate: string?
+    let RemoveDate: String?
 }

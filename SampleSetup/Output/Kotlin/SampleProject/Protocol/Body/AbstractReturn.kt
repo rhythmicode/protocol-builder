@@ -1,7 +1,7 @@
 package SampleProject.Protocol.Body
 
 open class AbstractReturn {
-    var InsertDate: string = ""
+    var InsertDate: String = ""
 
     var ResultEnumId: Int = 0
 
