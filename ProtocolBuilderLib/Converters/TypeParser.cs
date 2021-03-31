@@ -23,11 +23,12 @@ namespace ProtocolBuilder.Converters
                 if (typeAsImport != null)
                     return typeAsImport?.fullPath;
             }
+            if (result == "DateTime")
+            {
+                result = "string";
+            }
             switch (result)
             {
-                case "DateTime":
-                    result = "string";
-                    break;
                 case "string":
                     switch (Builder.Instance.Language)
                     {
