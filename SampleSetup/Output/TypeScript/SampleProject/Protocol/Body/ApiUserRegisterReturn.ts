@@ -4,7 +4,7 @@ import { CurrencyTypes } from '../Context/CurrencyTypes';
 export class ApiUserRegisterReturn extends AbstractReturn {
     UserCurrencyTypeEnumId: number = CurrencyTypes.EUR as number;
 
-    Token: ApiTokenPostReturn;
+    Token: ApiTokenPostReturn | null = null;
 
-    ErrorCodes: Array<string>;
+    ErrorCodes: Array<string> | null = null;
 }

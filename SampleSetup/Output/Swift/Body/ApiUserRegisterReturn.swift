@@ -2,8 +2,8 @@
  {
         var UserCurrencyTypeEnumId: Int = Int(CurrencyTypes.EUR)
 
-        var Token: ApiTokenPostReturn
+        var Token: ApiTokenPostReturn? = nil
 
-        var ErrorCodes: [String]
+        var ErrorCodes: [String]? = nil
     }
 

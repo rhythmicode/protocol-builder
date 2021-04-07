@@ -708,6 +708,7 @@ namespace ProtocolBuilder
             return result;
         }
 
+        private Regex initializerUsingConstantsRegex = new Regex(@"\W*=\W*(?<constant>[a-zA-Z]\w*\.+\w+).*");
         public string LanguageDeclaration(
             bool isEnum,
             bool isStatic,
@@ -867,8 +868,17 @@ namespace ProtocolBuilder
                                 resultInitializer = "";
                             }
                             break;
-                        case Languages.Swift:
                         case Languages.Kotlin:
+                            var matchedConstants = initializerUsingConstantsRegex.Match(resultInitializer);
+                            if (matchedConstants.Success) // It contains a constant from an enum
+                            {
+                                resultInitializer = resultInitializer.Replace(
+                                    matchedConstants.Groups["constant"].Value,
+                                    $"{matchedConstants.Groups["constant"].Value}.rawValue"
+                                );
+                            }
+                            break;
+                        case Languages.Swift:
                         case Languages.TypeScript:
                         default:
                             break;

@@ -8,12 +8,12 @@ class ApiUserRegisterReturn extends \SampleProject\Protocol\Body\AbstractReturn 
     public $UserCurrencyTypeEnumId;
 
     /**
-     * @var \SampleProject\Protocol\Body\ApiTokenPostReturn
+     * @var \SampleProject\Protocol\Body\ApiTokenPostReturn|null
      */
     public $Token;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
     public $ErrorCodes;
 
@@ -21,5 +21,7 @@ class ApiUserRegisterReturn extends \SampleProject\Protocol\Body\AbstractReturn 
     {
         parent::__construct();
         $this->UserCurrencyTypeEnumId = \SampleProject\Protocol\Context\CurrencyTypes::EUR;
+        $this->Token = null;
+        $this->ErrorCodes = null;
     }
 }

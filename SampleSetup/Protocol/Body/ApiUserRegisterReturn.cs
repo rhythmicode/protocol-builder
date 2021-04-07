@@ -10,8 +10,8 @@ namespace SampleProject.Protocol.Body
     {
         public int UserCurrencyTypeEnumId { get; set; } = (int)CurrencyTypes.EUR;
 
-        public ApiTokenPostReturn Token { get; set; }
+        public ApiTokenPostReturn? Token { get; set; } = null;
 
-        public List<string> ErrorCodes { get; set; }
+        public List<string>? ErrorCodes { get; set; } = null;
     }
 }
